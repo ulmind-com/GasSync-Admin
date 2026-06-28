@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Send, Bell } from 'lucide-react';
 import toast from 'react-hot-toast';
 import api from '../api/axios';
+import { NotificationPreview } from '../components/NotificationPreview';
 
 export const Notifications: React.FC = () => {
   const [title, setTitle] = useState('');
@@ -36,7 +37,6 @@ export const Notifications: React.FC = () => {
       setBody('');
       setImageFile(null);
       
-      // Reset file input if needed (a bit hacky but works for simple forms)
       const fileInput = document.getElementById('broadcast-image') as HTMLInputElement;
       if (fileInput) fileInput.value = '';
     } catch (error: any) {
@@ -47,73 +47,79 @@ export const Notifications: React.FC = () => {
   };
 
   return (
-    <div className="fade-in" style={{ maxWidth: '800px' }}>
+    <div className="fade-in" style={{ maxWidth: '1000px' }}>
       <div className="page-header">
         <h1 className="page-title">Broadcast Notifications</h1>
         <p className="page-subtitle">Send push notifications to all registered users</p>
       </div>
 
-      <div className="glass-panel" style={{ padding: '32px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '32px' }}>
-          <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: 'rgba(59, 130, 246, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--accent-primary)' }}>
-            <Bell size={24} />
-          </div>
-          <div>
-            <h2 style={{ fontSize: '1.25rem', fontWeight: 600, marginBottom: '4px' }}>Compose Message</h2>
-            <p style={{ color: 'var(--text-secondary)', fontSize: '0.95rem' }}>This message will be sent to all users with active push tokens.</p>
-          </div>
-        </div>
-
-        <form onSubmit={handleBroadcast}>
-          <div className="form-group">
-            <label className="form-label">Notification Title</label>
-            <input 
-              type="text" 
-              className="form-input" 
-              value={title}
-              onChange={e => setTitle(e.target.value)}
-              placeholder="e.g., Important Gas Price Update"
-              required
-            />
-          </div>
-
-          <div className="form-group">
-            <label className="form-label">Notification Body</label>
-            <textarea 
-              className="form-input" 
-              value={body}
-              onChange={e => setBody(e.target.value)}
-              placeholder="Type your message here..."
-              maxLength={255}
-              required
-            />
-            <div style={{ textAlign: 'right', marginTop: '8px', fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
-              {body.length}/255
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))', gap: '32px' }}>
+        <div className="glass-panel" style={{ padding: '32px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '32px' }}>
+            <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: 'rgba(59, 130, 246, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--accent-primary)' }}>
+              <Bell size={24} />
+            </div>
+            <div>
+              <h2 style={{ fontSize: '1.25rem', fontWeight: 600, marginBottom: '4px' }}>Compose Message</h2>
+              <p style={{ color: 'var(--text-secondary)', fontSize: '0.95rem' }}>This message will be sent to all users with active push tokens.</p>
             </div>
           </div>
 
-          <div className="form-group">
-            <label className="form-label">Image Attachment (Optional)</label>
-            <input 
-              id="broadcast-image"
-              type="file" 
-              accept="image/*"
-              className="form-input" 
-              onChange={handleImageChange}
-              style={{ padding: '8px' }}
-            />
-          </div>
+          <form onSubmit={handleBroadcast}>
+            <div className="form-group">
+              <label className="form-label">Notification Title</label>
+              <input 
+                type="text" 
+                className="form-input" 
+                value={title}
+                onChange={e => setTitle(e.target.value)}
+                placeholder="e.g., Important Gas Price Update"
+                required
+              />
+            </div>
 
-          <button 
-            type="submit" 
-            className="btn btn-primary" 
-            style={{ width: 'auto', marginTop: '16px' }}
-            disabled={loading}
-          >
-            {loading ? <div className="spinner" style={{ width: 18, height: 18, marginRight: '8px' }} /> : <Send size={18} style={{ marginRight: '8px' }} />}
-            Send Broadcast
-          </button>
-        </form>
+            <div className="form-group">
+              <label className="form-label">Notification Body</label>
+              <textarea 
+                className="form-input" 
+                value={body}
+                onChange={e => setBody(e.target.value)}
+                placeholder="Type your message here..."
+                maxLength={255}
+                required
+              />
+              <div style={{ textAlign: 'right', marginTop: '8px', fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
+                {body.length}/255
+              </div>
+            </div>
+
+            <div className="form-group">
+              <label className="form-label">Image Attachment (Optional)</label>
+              <input 
+                id="broadcast-image"
+                type="file" 
+                accept="image/*"
+                className="form-input" 
+                onChange={handleImageChange}
+                style={{ padding: '8px' }}
+              />
+            </div>
+
+            <button 
+              type="submit" 
+              className="btn btn-primary" 
+              style={{ width: 'auto', marginTop: '16px' }}
+              disabled={loading}
+            >
+              {loading ? <div className="spinner" style={{ width: 18, height: 18, marginRight: '8px' }} /> : <Send size={18} style={{ marginRight: '8px' }} />}
+              Send Broadcast
+            </button>
+          </form>
+        </div>
+
+        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'flex-start', paddingTop: '20px' }}>
+          <NotificationPreview title={title} body={body} imageFile={imageFile} />
+        </div>
       </div>
     </div>
   );

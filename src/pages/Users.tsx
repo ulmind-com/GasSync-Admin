@@ -3,6 +3,7 @@ import { Trash2, Send, Mail, ChevronLeft, ChevronRight } from 'lucide-react';
 import toast from 'react-hot-toast';
 import api from '../api/axios';
 import { Modal } from '../components/Modal';
+import { NotificationPreview } from '../components/NotificationPreview';
 
 export const Users: React.FC = () => {
   const [users, setUsers] = useState<any[]>([]);
@@ -224,48 +225,55 @@ export const Users: React.FC = () => {
       </div>
 
       <Modal isOpen={isNotifyModalOpen} onClose={() => setIsNotifyModalOpen(false)} title="Send Push Notification">
-        <form onSubmit={handleSendNotification}>
-          <div className="form-group">
-            <label className="form-label">Title</label>
-            <input 
-              type="text" 
-              className="form-input" 
-              value={notifyTitle} 
-              onChange={e => setNotifyTitle(e.target.value)} 
-              placeholder="e.g. Account Update"
-              required 
-            />
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '24px' }}>
+          <form onSubmit={handleSendNotification} style={{ display: 'flex', flexDirection: 'column' }}>
+            <div className="form-group">
+              <label className="form-label">Title</label>
+              <input 
+                type="text" 
+                className="form-input" 
+                value={notifyTitle} 
+                onChange={e => setNotifyTitle(e.target.value)} 
+                placeholder="e.g. Account Update"
+                required 
+              />
+            </div>
+            <div className="form-group">
+              <label className="form-label">Message</label>
+              <textarea 
+                className="form-input" 
+                value={notifyBody} 
+                onChange={e => setNotifyBody(e.target.value)} 
+                placeholder="Type your message here..."
+                style={{ flex: 1, minHeight: '120px' }}
+                required 
+              />
+            </div>
+            <div className="form-group" style={{ marginBottom: '24px' }}>
+              <label className="form-label">Image Attachment (Optional)</label>
+              <input 
+                id="user-notify-image"
+                type="file" 
+                accept="image/*"
+                className="form-input" 
+                onChange={handleImageChange}
+                style={{ padding: '8px' }}
+              />
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px', marginTop: 'auto' }}>
+              <button type="button" className="btn btn-outline" onClick={() => setIsNotifyModalOpen(false)}>
+                Cancel
+              </button>
+              <button type="submit" className="btn btn-primary" disabled={isSending}>
+                {isSending ? <div className="spinner" style={{ width: 16, height: 16 }} /> : 'Send Now'}
+              </button>
+            </div>
+          </form>
+
+          <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+            <NotificationPreview title={notifyTitle} body={notifyBody} imageFile={notifyImageFile} />
           </div>
-          <div className="form-group">
-            <label className="form-label">Message</label>
-            <textarea 
-              className="form-input" 
-              value={notifyBody} 
-              onChange={e => setNotifyBody(e.target.value)} 
-              placeholder="Type your message here..."
-              required 
-            />
-          </div>
-          <div className="form-group" style={{ marginBottom: '24px' }}>
-            <label className="form-label">Image Attachment (Optional)</label>
-            <input 
-              id="user-notify-image"
-              type="file" 
-              accept="image/*"
-              className="form-input" 
-              onChange={handleImageChange}
-              style={{ padding: '8px' }}
-            />
-          </div>
-          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px' }}>
-            <button type="button" className="btn btn-outline" onClick={() => setIsNotifyModalOpen(false)}>
-              Cancel
-            </button>
-            <button type="submit" className="btn btn-primary" disabled={isSending}>
-              {isSending ? <div className="spinner" style={{ width: 16, height: 16 }} /> : 'Send Now'}
-            </button>
-          </div>
-        </form>
+        </div>
       </Modal>
     </div>
   );

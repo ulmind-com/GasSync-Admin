@@ -358,3 +358,96 @@ textarea.form-input {
   background: var(--bg-dark);
   border: 1px solid var(--border-color);
 }
+
+/* Phone Preview */
+.notification-preview {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.preview-header {
+  margin-bottom: 12px;
+  text-align: center;
+}
+
+.mock-phone {
+  width: 300px;
+  min-height: 240px;
+  background: #1e1e1e; /* Dark theme phone background */
+  border-radius: 30px;
+  border: 8px solid #333;
+  padding: 16px;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+  position: relative;
+  overflow: hidden;
+}
+
+.mock-status-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: white;
+  margin-bottom: 24px;
+  padding: 0 4px;
+}
+
+.mock-notification {
+  background: #2d2d2d;
+  border-radius: 12px;
+  padding: 14px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+}
+
+.mock-notif-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.mock-app-icon {
+  width: 24px;
+  height: 24px;
+  background: var(--accent-primary);
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.mock-notif-content {
+  padding-left: 2px;
+}
+
+.mock-notif-title {
+  color: white;
+  font-size: 0.95rem;
+  font-weight: 600;
+  margin-bottom: 4px;
+  word-break: break-word;
+}
+
+.mock-notif-body {
+  color: rgba(255,255,255,0.7);
+  font-size: 0.85rem;
+  line-height: 1.4;
+  word-break: break-word;
+}
+
+.mock-notif-image-container {
+  margin-top: 10px;
+  border-radius: 8px;
+  overflow: hidden;
+  max-height: 140px;
+  background: #1a1a1a;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.mock-notif-image {
+  width: 100%;
+  height: auto;
+  object-fit: cover;
+}
