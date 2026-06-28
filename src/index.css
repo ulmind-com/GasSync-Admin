@@ -451,3 +451,85 @@ textarea.form-input {
   height: auto;
   object-fit: cover;
 }
+
+/* OP Dashboard Styles */
+.stat-card {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.stat-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 40px rgba(0,0,0,0.3);
+}
+
+.icon-wrapper {
+  padding: 16px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.stat-label {
+  color: var(--text-secondary);
+  font-size: 0.95rem;
+  margin-bottom: 6px;
+  font-weight: 500;
+}
+
+.stat-value {
+  font-size: 2.25rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.activity-list {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.activity-item {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+  position: relative;
+}
+
+.activity-item:not(:last-child)::after {
+  content: '';
+  position: absolute;
+  top: 36px;
+  left: 17px;
+  width: 2px;
+  height: calc(100% - 20px);
+  background: rgba(255,255,255,0.05);
+}
+
+.activity-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  z-index: 1;
+}
+
+.activity-content {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding-top: 6px;
+}
+
+.activity-content p {
+  color: rgba(255,255,255,0.8);
+  font-size: 0.95rem;
+  line-height: 1.4;
+}
+
+.activity-time {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+}
