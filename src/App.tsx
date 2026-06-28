@@ -6,6 +6,7 @@ import { Login } from './pages/Login';
 import { Dashboard } from './pages/Dashboard';
 import { Users } from './pages/Users';
 import { Notifications } from './pages/Notifications';
+import { CommunityPosts } from './pages/CommunityPosts';
 
 const App: React.FC = () => {
   return (
@@ -18,6 +19,7 @@ const App: React.FC = () => {
           <Route path="/" element={<Layout />}>
             <Route index element={<Dashboard />} />
             <Route path="users" element={<Users />} />
+            <Route path="community-posts" element={<CommunityPosts />} />
             <Route path="notifications" element={<Notifications />} />
           </Route>
           

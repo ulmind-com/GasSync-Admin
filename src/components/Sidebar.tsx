@@ -1,6 +1,6 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { LayoutDashboard, Users, Bell, LogOut, Fuel } from 'lucide-react';
+import { LayoutDashboard, Users, Bell, LogOut, Fuel, Database } from 'lucide-react';
 
 export const Sidebar: React.FC = () => {
   const handleLogout = () => {
@@ -30,6 +30,14 @@ export const Sidebar: React.FC = () => {
         >
           <Users size={20} />
           Users
+        </NavLink>
+
+        <NavLink
+          to="/community-posts"
+          className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
+        >
+          <Database size={20} />
+          Community Posts
         </NavLink>
         
         <NavLink 
