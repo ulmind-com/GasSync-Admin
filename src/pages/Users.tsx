@@ -13,10 +13,16 @@ export const Users: React.FC = () => {
   const [selectedUser, setSelectedUser] = useState<{ id: string, token: string } | null>(null);
   const [notifyTitle, setNotifyTitle] = useState('');
   const [notifyBody, setNotifyBody] = useState('');
-  const [notifyImageUrl, setNotifyImageUrl] = useState('');
+  const [notifyImageFile, setNotifyImageFile] = useState<File | null>(null);
   const [isDeleting, setIsDeleting] = useState<string | null>(null);
   const [isSending, setIsSending] = useState(false);
   const limit = 10;
+
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files.length > 0) {
+      setNotifyImageFile(e.target.files[0]);
+    }
+  };
 
   const fetchUsers = async (currentPage = page) => {
     try {
@@ -60,7 +66,9 @@ export const Users: React.FC = () => {
     setSelectedUser({ id, token });
     setNotifyTitle('');
     setNotifyBody('');
-    setNotifyImageUrl('');
+    setNotifyImageFile(null);
+    const fileInput = document.getElementById('user-notify-image') as HTMLInputElement;
+    if (fileInput) fileInput.value = '';
     setIsNotifyModalOpen(true);
   };
 
@@ -70,7 +78,16 @@ export const Users: React.FC = () => {
 
     setIsSending(true);
     try {
-      await api.post(`/admin/notify/user/${selectedUser.id}`, { title: notifyTitle, body: notifyBody, imageUrl: notifyImageUrl });
+      const formData = new FormData();
+      formData.append('title', notifyTitle);
+      formData.append('body', notifyBody);
+      if (notifyImageFile) {
+        formData.append('image', notifyImageFile);
+      }
+
+      await api.post(`/admin/notify/user/${selectedUser.id}`, formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
       toast.success('Notification sent successfully');
       setIsNotifyModalOpen(false);
     } catch (error: any) {
@@ -230,13 +247,14 @@ export const Users: React.FC = () => {
             />
           </div>
           <div className="form-group" style={{ marginBottom: '24px' }}>
-            <label className="form-label">Image URL (Optional)</label>
+            <label className="form-label">Image Attachment (Optional)</label>
             <input 
-              type="url" 
+              id="user-notify-image"
+              type="file" 
+              accept="image/*"
               className="form-input" 
-              value={notifyImageUrl} 
-              onChange={e => setNotifyImageUrl(e.target.value)} 
-              placeholder="https://example.com/image.jpg"
+              onChange={handleImageChange}
+              style={{ padding: '8px' }}
             />
           </div>
           <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px' }}>

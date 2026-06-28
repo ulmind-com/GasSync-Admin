@@ -6,8 +6,14 @@ import api from '../api/axios';
 export const Notifications: React.FC = () => {
   const [title, setTitle] = useState('');
   const [body, setBody] = useState('');
-  const [imageUrl, setImageUrl] = useState('');
+  const [imageFile, setImageFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
+
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files.length > 0) {
+      setImageFile(e.target.files[0]);
+    }
+  };
 
   const handleBroadcast = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -15,11 +21,24 @@ export const Notifications: React.FC = () => {
 
     setLoading(true);
     try {
-      const response = await api.post('/admin/notify/broadcast', { title, body, imageUrl });
+      const formData = new FormData();
+      formData.append('title', title);
+      formData.append('body', body);
+      if (imageFile) {
+        formData.append('image', imageFile);
+      }
+
+      const response = await api.post('/admin/notify/broadcast', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
       toast.success(response.data.message || 'Broadcast initiated successfully');
       setTitle('');
       setBody('');
-      setImageUrl('');
+      setImageFile(null);
+      
+      // Reset file input if needed (a bit hacky but works for simple forms)
+      const fileInput = document.getElementById('broadcast-image') as HTMLInputElement;
+      if (fileInput) fileInput.value = '';
     } catch (error: any) {
       toast.error(error.response?.data?.message || 'Failed to broadcast notification');
     } finally {
@@ -74,13 +93,14 @@ export const Notifications: React.FC = () => {
           </div>
 
           <div className="form-group">
-            <label className="form-label">Image URL (Optional)</label>
+            <label className="form-label">Image Attachment (Optional)</label>
             <input 
-              type="url" 
+              id="broadcast-image"
+              type="file" 
+              accept="image/*"
               className="form-input" 
-              value={imageUrl}
-              onChange={e => setImageUrl(e.target.value)}
-              placeholder="https://example.com/banner.jpg"
+              onChange={handleImageChange}
+              style={{ padding: '8px' }}
             />
           </div>
 
