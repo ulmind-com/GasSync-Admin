@@ -11,10 +11,13 @@ export const Sidebar: React.FC = () => {
   return (
     <div className="sidebar">
       <div className="sidebar-logo">
-        <Fuel size={28} color="#3b82f6" />
-        GasSync Admin
+        <span className="logo-mark">
+          <Fuel size={22} color="#fff" />
+        </span>
+        <span className="logo-text">GasSync</span>
       </div>
-      
+
+      <div className="nav-section-label">Menu</div>
       <div className="nav-links">
         <NavLink 
           to="/" 

@@ -156,7 +156,7 @@ export const CommunityPosts: React.FC = () => {
                                   target="_blank"
                                   rel="noopener noreferrer"
                                   title="Open in Google Maps"
-                                  style={{ color: 'var(--accent-primary)', display: 'inline-flex' }}
+                                  className="maps-link"
                                 >
                                   <ExternalLink size={13} />
                                 </a>
@@ -169,27 +169,27 @@ export const CommunityPosts: React.FC = () => {
                         </div>
                       </td>
                       <td>
-                        <span
-                          style={{
-                            textTransform: 'capitalize',
-                            padding: '4px 8px',
-                            background: 'rgba(255,255,255,0.1)',
-                            borderRadius: '4px',
-                            fontSize: '0.85rem',
-                          }}
-                        >
+                        <span className={`fuel-badge fuel-${(post.fuelType || 'default').toLowerCase()}`}>
                           {post.fuelType}
                         </span>
                       </td>
                       <td>
-                        <strong style={{ color: '#10b981' }}>${post.price.toFixed(2)}</strong>
+                        <strong className="num" style={{ color: 'var(--success)', fontSize: '0.98rem' }}>
+                          ${post.price.toFixed(2)}
+                        </strong>
                       </td>
-                      <td style={{ color: 'var(--text-secondary)' }}>{new Date(post.createdAt).toLocaleString()}</td>
+                      <td className="num" style={{ color: 'var(--text-secondary)', whiteSpace: 'nowrap' }}>
+                        {new Date(post.createdAt).toLocaleString()}
+                      </td>
                       <td>
                         {post.isVerified ? (
-                          <CheckCircle size={20} color="#10b981" />
+                          <span className="verify-pill verify-yes">
+                            <CheckCircle size={14} /> Verified
+                          </span>
                         ) : (
-                          <XCircle size={20} color="var(--text-secondary)" />
+                          <span className="verify-pill verify-no">
+                            <XCircle size={14} /> Pending
+                          </span>
                         )}
                       </td>
                       <td>

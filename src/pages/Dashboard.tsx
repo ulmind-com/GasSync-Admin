@@ -57,9 +57,9 @@ export const Dashboard: React.FC = () => {
 
       {/* METRICS ROW */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '24px', marginBottom: '40px' }}>
-        <div className="glass-panel stat-card" style={{ padding: '24px', display: 'flex', alignItems: 'center', gap: '20px' }}>
-          <div className="icon-wrapper" style={{ background: 'rgba(59, 130, 246, 0.15)', color: '#3b82f6' }}>
-            <UsersIcon size={32} />
+        <div className="glass-panel stat-card" style={{ padding: '26px', display: 'flex', alignItems: 'center', gap: '20px', ['--card-accent' as any]: 'linear-gradient(90deg,#3b82f6,#60a5fa)' }}>
+          <div className="icon-wrapper" style={{ background: 'rgba(59, 130, 246, 0.15)', color: '#60a5fa' }}>
+            <UsersIcon size={28} />
           </div>
           <div>
             <p className="stat-label">Total Users</p>
@@ -67,9 +67,9 @@ export const Dashboard: React.FC = () => {
           </div>
         </div>
 
-        <div className="glass-panel stat-card" style={{ padding: '24px', display: 'flex', alignItems: 'center', gap: '20px' }}>
-          <div className="icon-wrapper" style={{ background: 'rgba(16, 185, 129, 0.15)', color: '#10b981' }}>
-            <UserPlus size={32} />
+        <div className="glass-panel stat-card" style={{ padding: '26px', display: 'flex', alignItems: 'center', gap: '20px', ['--card-accent' as any]: 'linear-gradient(90deg,#10b981,#34d399)' }}>
+          <div className="icon-wrapper" style={{ background: 'rgba(16, 185, 129, 0.15)', color: '#34d399' }}>
+            <UserPlus size={28} />
           </div>
           <div>
             <p className="stat-label">Users (Last 24h)</p>
@@ -77,9 +77,9 @@ export const Dashboard: React.FC = () => {
           </div>
         </div>
 
-        <div className="glass-panel stat-card" style={{ padding: '24px', display: 'flex', alignItems: 'center', gap: '20px' }}>
-          <div className="icon-wrapper" style={{ background: 'rgba(139, 92, 246, 0.15)', color: '#8b5cf6' }}>
-            <Database size={32} />
+        <div className="glass-panel stat-card" style={{ padding: '26px', display: 'flex', alignItems: 'center', gap: '20px', ['--card-accent' as any]: 'linear-gradient(90deg,#8b5cf6,#a78bfa)' }}>
+          <div className="icon-wrapper" style={{ background: 'rgba(139, 92, 246, 0.15)', color: '#a78bfa' }}>
+            <Database size={28} />
           </div>
           <div>
             <p className="stat-label">Community Posts</p>
@@ -87,9 +87,9 @@ export const Dashboard: React.FC = () => {
           </div>
         </div>
 
-        <div className="glass-panel stat-card" style={{ padding: '24px', display: 'flex', alignItems: 'center', gap: '20px' }}>
-          <div className="icon-wrapper" style={{ background: 'rgba(245, 158, 11, 0.15)', color: '#f59e0b' }}>
-            <Activity size={32} />
+        <div className="glass-panel stat-card" style={{ padding: '26px', display: 'flex', alignItems: 'center', gap: '20px', ['--card-accent' as any]: 'linear-gradient(90deg,#f59e0b,#fbbf24)' }}>
+          <div className="icon-wrapper" style={{ background: 'rgba(245, 158, 11, 0.15)', color: '#fbbf24' }}>
+            <Activity size={28} />
           </div>
           <div>
             <p className="stat-label">Posts (Last 24h)</p>
@@ -102,30 +102,26 @@ export const Dashboard: React.FC = () => {
         {/* TOP LOCATIONS */}
         <div className="glass-panel" style={{ padding: '32px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '24px' }}>
-            <MapPin size={24} color="var(--accent-primary)" />
-            <h2 style={{ fontSize: '1.25rem', fontWeight: 600 }}>Top Reporting Stations</h2>
+            <MapPin size={22} color="var(--accent-primary)" />
+            <h2 className="section-title">Top Reporting Stations</h2>
           </div>
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
             {data.topLocations.map((loc, idx) => {
-              const percentage = Math.max(5, (loc.count / maxLocationCount) * 100);
+              const percentage = Math.max(6, (loc.count / maxLocationCount) * 100);
               const label = loc.name || (loc.city ? `${loc.city}${loc.state ? `, ${loc.state}` : ''}` : 'Unknown');
+              const medal = idx === 0 ? 'gold' : idx === 1 ? 'silver' : idx === 2 ? 'bronze' : '';
               return (
-                <div key={idx} style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.95rem', gap: '12px' }}>
-                    <span style={{ fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{label}</span>
-                    <span style={{ color: 'var(--text-secondary)', flexShrink: 0 }}>{loc.count} posts</span>
+                <div key={idx} className="rank-row">
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.95rem', gap: '12px' }}>
+                    <span style={{ display: 'flex', alignItems: 'center', gap: '10px', minWidth: 0 }}>
+                      <span className={`rank-medal ${medal}`}>{idx + 1}</span>
+                      <span style={{ fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{label}</span>
+                    </span>
+                    <span className="num" style={{ color: 'var(--text-secondary)', flexShrink: 0 }}>{loc.count}</span>
                   </div>
-                  <div style={{ width: '100%', height: '8px', background: 'rgba(255,255,255,0.05)', borderRadius: '4px', overflow: 'hidden' }}>
-                    <div 
-                      style={{ 
-                        height: '100%', 
-                        width: `${percentage}%`, 
-                        background: 'linear-gradient(90deg, var(--accent-primary), #8b5cf6)',
-                        borderRadius: '4px',
-                        transition: 'width 1s ease-out'
-                      }} 
-                    />
+                  <div className="rank-bar-track">
+                    <div className="rank-bar-fill" style={{ width: `${percentage}%` }} />
                   </div>
                 </div>
               );
@@ -141,8 +137,8 @@ export const Dashboard: React.FC = () => {
           
           <div className="glass-panel" style={{ padding: '32px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '24px' }}>
-              <Droplets size={24} color="#8b5cf6" />
-              <h2 style={{ fontSize: '1.25rem', fontWeight: 600 }}>Recent Prices Reported</h2>
+              <Droplets size={22} color="#a78bfa" />
+              <h2 className="section-title">Recent Prices Reported</h2>
             </div>
             
             <div className="activity-list">
@@ -154,7 +150,7 @@ export const Dashboard: React.FC = () => {
                   <div className="activity-content">
                     <p>
                       <strong style={{ color: 'white' }}>{price.reportedBy?.displayName || 'Someone'}</strong> reported <strong style={{ textTransform: 'capitalize', color: 'white' }}>{price.fuelType}</strong> gas at 
-                      <strong style={{ color: '#10b981' }}> ${price.price.toFixed(2)}</strong>
+                      <strong className="num" style={{ color: 'var(--success)' }}> ${price.price.toFixed(2)}</strong>
                     </p>
                     <span className="activity-time">{new Date(price.createdAt).toLocaleString()} • {price.station?.name || price.stationName || price.city || 'Unknown Location'}</span>
                   </div>
@@ -168,8 +164,8 @@ export const Dashboard: React.FC = () => {
 
           <div className="glass-panel" style={{ padding: '32px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '24px' }}>
-              <Clock size={24} color="#10b981" />
-              <h2 style={{ fontSize: '1.25rem', fontWeight: 600 }}>Recent Signups</h2>
+              <Clock size={22} color="#34d399" />
+              <h2 className="section-title">Recent Signups</h2>
             </div>
             
             <div className="activity-list">
