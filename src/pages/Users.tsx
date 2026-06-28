@@ -13,6 +13,7 @@ export const Users: React.FC = () => {
   const [selectedUser, setSelectedUser] = useState<{ id: string, token: string } | null>(null);
   const [notifyTitle, setNotifyTitle] = useState('');
   const [notifyBody, setNotifyBody] = useState('');
+  const [notifyImageUrl, setNotifyImageUrl] = useState('');
   const [isDeleting, setIsDeleting] = useState<string | null>(null);
   const [isSending, setIsSending] = useState(false);
   const limit = 10;
@@ -59,6 +60,7 @@ export const Users: React.FC = () => {
     setSelectedUser({ id, token });
     setNotifyTitle('');
     setNotifyBody('');
+    setNotifyImageUrl('');
     setIsNotifyModalOpen(true);
   };
 
@@ -68,7 +70,7 @@ export const Users: React.FC = () => {
 
     setIsSending(true);
     try {
-      await api.post(`/admin/notify/user/${selectedUser.id}`, { title: notifyTitle, body: notifyBody });
+      await api.post(`/admin/notify/user/${selectedUser.id}`, { title: notifyTitle, body: notifyBody, imageUrl: notifyImageUrl });
       toast.success('Notification sent successfully');
       setIsNotifyModalOpen(false);
     } catch (error: any) {
@@ -217,7 +219,7 @@ export const Users: React.FC = () => {
               required 
             />
           </div>
-          <div className="form-group" style={{ marginBottom: '24px' }}>
+          <div className="form-group">
             <label className="form-label">Message</label>
             <textarea 
               className="form-input" 
@@ -225,6 +227,16 @@ export const Users: React.FC = () => {
               onChange={e => setNotifyBody(e.target.value)} 
               placeholder="Type your message here..."
               required 
+            />
+          </div>
+          <div className="form-group" style={{ marginBottom: '24px' }}>
+            <label className="form-label">Image URL (Optional)</label>
+            <input 
+              type="url" 
+              className="form-input" 
+              value={notifyImageUrl} 
+              onChange={e => setNotifyImageUrl(e.target.value)} 
+              placeholder="https://example.com/image.jpg"
             />
           </div>
           <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px' }}>
