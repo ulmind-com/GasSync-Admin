@@ -338,3 +338,23 @@ textarea.form-input {
 @keyframes spin {
   to { transform: rotate(360deg); }
 }
+
+/* Modal */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modal-content {
+  background: var(--bg-dark);
+  border: 1px solid var(--border-color);
+}

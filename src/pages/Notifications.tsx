@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Send, Bell } from 'lucide-react';
+import toast from 'react-hot-toast';
 import api from '../api/axios';
 
 export const Notifications: React.FC = () => {
@@ -14,11 +15,11 @@ export const Notifications: React.FC = () => {
     setLoading(true);
     try {
       const response = await api.post('/admin/notify/broadcast', { title, body });
-      alert(response.data.message || 'Broadcast initiated successfully');
+      toast.success(response.data.message || 'Broadcast initiated successfully');
       setTitle('');
       setBody('');
     } catch (error: any) {
-      alert(error.response?.data?.message || 'Failed to broadcast notification');
+      toast.error(error.response?.data?.message || 'Failed to broadcast notification');
     } finally {
       setLoading(false);
     }

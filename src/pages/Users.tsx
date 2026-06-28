@@ -1,12 +1,20 @@
 import React, { useEffect, useState } from 'react';
 import { Trash2, Send, Mail, ChevronLeft, ChevronRight } from 'lucide-react';
+import toast from 'react-hot-toast';
 import api from '../api/axios';
+import { Modal } from '../components/Modal';
 
 export const Users: React.FC = () => {
   const [users, setUsers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const [isNotifyModalOpen, setIsNotifyModalOpen] = useState(false);
+  const [selectedUser, setSelectedUser] = useState<{ id: string, token: string } | null>(null);
+  const [notifyTitle, setNotifyTitle] = useState('');
+  const [notifyBody, setNotifyBody] = useState('');
+  const [isDeleting, setIsDeleting] = useState<string | null>(null);
+  const [isSending, setIsSending] = useState(false);
   const limit = 10;
 
   const fetchUsers = async (currentPage = page) => {
@@ -18,7 +26,7 @@ export const Users: React.FC = () => {
       setPage(currentPage);
     } catch (error) {
       console.error('Failed to fetch users', error);
-      alert('Failed to fetch users');
+      toast.error('Failed to fetch users');
     } finally {
       setLoading(false);
     }
@@ -31,31 +39,42 @@ export const Users: React.FC = () => {
   const handleDelete = async (id: string) => {
     if (!window.confirm('Are you sure you want to delete this user?')) return;
     
+    setIsDeleting(id);
     try {
       await api.delete(`/admin/users/${id}`);
       setUsers(users.filter(u => u.id !== id));
-      alert('User deleted successfully');
+      toast.success('User deleted successfully');
     } catch (error: any) {
-      alert(error.response?.data?.message || 'Failed to delete user');
+      toast.error(error.response?.data?.message || 'Failed to delete user');
+    } finally {
+      setIsDeleting(null);
     }
   };
 
-  const handleSendNotification = async (id: string, token: string | undefined) => {
+  const openNotifyModal = (id: string, token: string | undefined) => {
     if (!token) {
-      alert('User does not have an active push token');
+      toast.error('User does not have an active push token');
       return;
     }
+    setSelectedUser({ id, token });
+    setNotifyTitle('');
+    setNotifyBody('');
+    setIsNotifyModalOpen(true);
+  };
 
-    const title = window.prompt('Notification Title:');
-    if (!title) return;
-    const body = window.prompt('Notification Body:');
-    if (!body) return;
+  const handleSendNotification = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedUser || !notifyTitle || !notifyBody) return;
 
+    setIsSending(true);
     try {
-      await api.post(`/admin/notify/user/${id}`, { title, body });
-      alert('Notification sent successfully');
+      await api.post(`/admin/notify/user/${selectedUser.id}`, { title: notifyTitle, body: notifyBody });
+      toast.success('Notification sent successfully');
+      setIsNotifyModalOpen(false);
     } catch (error: any) {
-      alert(error.response?.data?.message || 'Failed to send notification');
+      toast.error(error.response?.data?.message || 'Failed to send notification');
+    } finally {
+      setIsSending(false);
     }
   };
 
@@ -129,7 +148,7 @@ export const Users: React.FC = () => {
                         <button 
                           className="icon-btn" 
                           title="Send Push Notification"
-                          onClick={() => handleSendNotification(user.id, user.expoPushToken)}
+                          onClick={() => openNotifyModal(user.id, user.expoPushToken)}
                           style={{ opacity: user.expoPushToken ? 1 : 0.5, cursor: user.expoPushToken ? 'pointer' : 'not-allowed' }}
                         >
                           <Send size={18} />
@@ -138,8 +157,9 @@ export const Users: React.FC = () => {
                           className="icon-btn danger" 
                           title="Delete User"
                           onClick={() => handleDelete(user.id)}
+                          disabled={isDeleting === user.id}
                         >
-                          <Trash2 size={18} />
+                          {isDeleting === user.id ? <div className="spinner" style={{ width: 18, height: 18 }} /> : <Trash2 size={18} />}
                         </button>
                       </div>
                     </td>
@@ -183,6 +203,40 @@ export const Users: React.FC = () => {
           </div>
         )}
       </div>
+
+      <Modal isOpen={isNotifyModalOpen} onClose={() => setIsNotifyModalOpen(false)} title="Send Push Notification">
+        <form onSubmit={handleSendNotification}>
+          <div className="form-group">
+            <label className="form-label">Title</label>
+            <input 
+              type="text" 
+              className="form-input" 
+              value={notifyTitle} 
+              onChange={e => setNotifyTitle(e.target.value)} 
+              placeholder="e.g. Account Update"
+              required 
+            />
+          </div>
+          <div className="form-group" style={{ marginBottom: '24px' }}>
+            <label className="form-label">Message</label>
+            <textarea 
+              className="form-input" 
+              value={notifyBody} 
+              onChange={e => setNotifyBody(e.target.value)} 
+              placeholder="Type your message here..."
+              required 
+            />
+          </div>
+          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px' }}>
+            <button type="button" className="btn btn-outline" onClick={() => setIsNotifyModalOpen(false)}>
+              Cancel
+            </button>
+            <button type="submit" className="btn btn-primary" disabled={isSending}>
+              {isSending ? <div className="spinner" style={{ width: 16, height: 16 }} /> : 'Send Now'}
+            </button>
+          </div>
+        </form>
+      </Modal>
     </div>
   );
 };
