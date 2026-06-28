@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { Database, ChevronLeft, ChevronRight, CheckCircle, XCircle, MapPin, Trash2, ExternalLink } from 'lucide-react';
+import { Database, ChevronLeft, ChevronRight, MapPin, Trash2, ExternalLink } from 'lucide-react';
 import api from '../api/axios';
 import toast from 'react-hot-toast';
+import { confirmToast } from '../lib/confirm';
 
 interface Post {
   _id: string;
@@ -73,7 +74,12 @@ export const CommunityPosts: React.FC = () => {
   }, []);
 
   const handleDelete = async (id: string) => {
-    if (!window.confirm('Delete this community post permanently? This cannot be undone.')) return;
+    const ok = await confirmToast({
+      title: 'Delete community post?',
+      message: 'This price report will be permanently removed.',
+      confirmLabel: 'Delete',
+    });
+    if (!ok) return;
     try {
       setDeletingId(id);
       await api.delete(`/admin/community-posts/${id}`);
@@ -117,7 +123,6 @@ export const CommunityPosts: React.FC = () => {
                   <th>Fuel Type</th>
                   <th>Price</th>
                   <th>Date &amp; Time</th>
-                  <th>Verified</th>
                   <th style={{ textAlign: 'right' }}>Actions</th>
                 </tr>
               </thead>
@@ -182,17 +187,6 @@ export const CommunityPosts: React.FC = () => {
                         {new Date(post.createdAt).toLocaleString()}
                       </td>
                       <td>
-                        {post.isVerified ? (
-                          <span className="verify-pill verify-yes">
-                            <CheckCircle size={14} /> Verified
-                          </span>
-                        ) : (
-                          <span className="verify-pill verify-no">
-                            <XCircle size={14} /> Pending
-                          </span>
-                        )}
-                      </td>
-                      <td>
                         <div className="actions-cell" style={{ justifyContent: 'flex-end' }}>
                           <button
                             className="icon-btn danger"
@@ -213,7 +207,7 @@ export const CommunityPosts: React.FC = () => {
                 })}
                 {posts.length === 0 && (
                   <tr>
-                    <td colSpan={7} style={{ textAlign: 'center', padding: '40px', color: 'var(--text-secondary)' }}>
+                    <td colSpan={6} style={{ textAlign: 'center', padding: '40px', color: 'var(--text-secondary)' }}>
                       No community posts found.
                     </td>
                   </tr>

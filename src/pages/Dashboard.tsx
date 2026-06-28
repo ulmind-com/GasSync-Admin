@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { Users as UsersIcon, UserPlus, Database, Activity, MapPin, Clock, Droplets } from 'lucide-react';
+import { Users as UsersIcon, UserPlus, Database, Activity, MapPin, Clock, Droplets, TrendingUp } from 'lucide-react';
 import api from '../api/axios';
+import { TrendChart, type TrendPoint } from '../components/TrendChart';
 
 interface DashboardData {
   metrics: {
@@ -10,6 +11,7 @@ interface DashboardData {
     posts24h: number;
   };
   topLocations: Array<{ name?: string; city?: string; state?: string; count: number }>;
+  trend: TrendPoint[];
   recentActivity: {
     users: Array<{ _id: string; displayName: string; email: string; createdAt: string }>;
     prices: Array<{ _id: string; fuelType: string; price: number; city?: string; state?: string; stationName?: string; createdAt: string; reportedBy?: { displayName: string }; station?: { name: string } }>;
@@ -96,6 +98,22 @@ export const Dashboard: React.FC = () => {
             <h2 className="stat-value">+{data.metrics.posts24h}</h2>
           </div>
         </div>
+      </div>
+
+      {/* ACTIVITY TREND CHART */}
+      <div className="glass-panel" style={{ padding: '28px 28px 18px', marginBottom: '24px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', marginBottom: '8px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <TrendingUp size={22} color="var(--accent-primary)" />
+            <h2 className="section-title">Activity Trend</h2>
+          </div>
+          <span style={{ color: 'var(--text-muted)', fontSize: '0.82rem' }}>Last 14 days</span>
+        </div>
+        {data.trend && data.trend.length > 0 ? (
+          <TrendChart data={data.trend} />
+        ) : (
+          <div style={{ color: 'var(--text-secondary)', textAlign: 'center', padding: '40px 0' }}>No activity data yet.</div>
+        )}
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px', alignItems: 'start' }}>

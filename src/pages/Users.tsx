@@ -4,6 +4,7 @@ import toast from 'react-hot-toast';
 import api from '../api/axios';
 import { Modal } from '../components/Modal';
 import { NotificationPreview } from '../components/NotificationPreview';
+import { confirmToast } from '../lib/confirm';
 
 export const Users: React.FC = () => {
   const [users, setUsers] = useState<any[]>([]);
@@ -45,8 +46,13 @@ export const Users: React.FC = () => {
   }, []);
 
   const handleDelete = async (id: string) => {
-    if (!window.confirm('Are you sure you want to delete this user?')) return;
-    
+    const ok = await confirmToast({
+      title: 'Delete user?',
+      message: 'This user account will be permanently removed.',
+      confirmLabel: 'Delete',
+    });
+    if (!ok) return;
+
     setIsDeleting(id);
     try {
       await api.delete(`/admin/users/${id}`);
