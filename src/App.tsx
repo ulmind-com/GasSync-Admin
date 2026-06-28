@@ -7,6 +7,7 @@ import { Dashboard } from './pages/Dashboard';
 import { Users } from './pages/Users';
 import { Notifications } from './pages/Notifications';
 import { CommunityPosts } from './pages/CommunityPosts';
+import { Feedback } from './pages/Feedback';
 
 const App: React.FC = () => {
   return (
@@ -20,6 +21,7 @@ const App: React.FC = () => {
             <Route index element={<Dashboard />} />
             <Route path="users" element={<Users />} />
             <Route path="community-posts" element={<CommunityPosts />} />
+            <Route path="feedback" element={<Feedback />} />
             <Route path="notifications" element={<Notifications />} />
           </Route>
           

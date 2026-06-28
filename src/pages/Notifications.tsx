@@ -3,6 +3,7 @@ import { Send, Bell } from 'lucide-react';
 import toast from 'react-hot-toast';
 import api from '../api/axios';
 import { NotificationPreview } from '../components/NotificationPreview';
+import { confirmToast } from '../lib/confirm';
 
 export const Notifications: React.FC = () => {
   const [title, setTitle] = useState('');
@@ -18,7 +19,13 @@ export const Notifications: React.FC = () => {
 
   const handleBroadcast = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!window.confirm('Are you sure you want to broadcast this notification to ALL users?')) return;
+    const ok = await confirmToast({
+      title: 'Broadcast to all users?',
+      message: 'This push notification will be sent to every user with an active token.',
+      confirmLabel: 'Send Broadcast',
+      danger: false,
+    });
+    if (!ok) return;
 
     setLoading(true);
     try {
