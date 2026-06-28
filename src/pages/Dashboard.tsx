@@ -9,10 +9,10 @@ interface DashboardData {
     totalPosts: number;
     posts24h: number;
   };
-  topLocations: Array<{ city: string; state: string; count: number }>;
+  topLocations: Array<{ name?: string; city?: string; state?: string; count: number }>;
   recentActivity: {
     users: Array<{ _id: string; displayName: string; email: string; createdAt: string }>;
-    prices: Array<{ _id: string; fuelType: string; price: number; city: string; state: string; createdAt: string; reportedBy?: { displayName: string }; station?: { name: string } }>;
+    prices: Array<{ _id: string; fuelType: string; price: number; city?: string; state?: string; stationName?: string; createdAt: string; reportedBy?: { displayName: string }; station?: { name: string } }>;
   };
 }
 
@@ -103,17 +103,18 @@ export const Dashboard: React.FC = () => {
         <div className="glass-panel" style={{ padding: '32px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '24px' }}>
             <MapPin size={24} color="var(--accent-primary)" />
-            <h2 style={{ fontSize: '1.25rem', fontWeight: 600 }}>Top Communities</h2>
+            <h2 style={{ fontSize: '1.25rem', fontWeight: 600 }}>Top Reporting Stations</h2>
           </div>
-          
+
           <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
             {data.topLocations.map((loc, idx) => {
               const percentage = Math.max(5, (loc.count / maxLocationCount) * 100);
+              const label = loc.name || (loc.city ? `${loc.city}${loc.state ? `, ${loc.state}` : ''}` : 'Unknown');
               return (
                 <div key={idx} style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.95rem' }}>
-                    <span style={{ fontWeight: 500 }}>{loc.city ? `${loc.city}, ${loc.state}` : 'Unknown'}</span>
-                    <span style={{ color: 'var(--text-secondary)' }}>{loc.count} posts</span>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.95rem', gap: '12px' }}>
+                    <span style={{ fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{label}</span>
+                    <span style={{ color: 'var(--text-secondary)', flexShrink: 0 }}>{loc.count} posts</span>
                   </div>
                   <div style={{ width: '100%', height: '8px', background: 'rgba(255,255,255,0.05)', borderRadius: '4px', overflow: 'hidden' }}>
                     <div 
@@ -155,7 +156,7 @@ export const Dashboard: React.FC = () => {
                       <strong style={{ color: 'white' }}>{price.reportedBy?.displayName || 'Someone'}</strong> reported <strong style={{ textTransform: 'capitalize', color: 'white' }}>{price.fuelType}</strong> gas at 
                       <strong style={{ color: '#10b981' }}> ${price.price.toFixed(2)}</strong>
                     </p>
-                    <span className="activity-time">{new Date(price.createdAt).toLocaleString()} • {price.city || 'Unknown Location'}</span>
+                    <span className="activity-time">{new Date(price.createdAt).toLocaleString()} • {price.station?.name || price.stationName || price.city || 'Unknown Location'}</span>
                   </div>
                 </div>
               ))}
