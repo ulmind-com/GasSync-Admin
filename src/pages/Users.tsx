@@ -1,16 +1,21 @@
 import React, { useEffect, useState } from 'react';
-import { Trash2, Send, Mail } from 'lucide-react';
+import { Trash2, Send, Mail, ChevronLeft, ChevronRight } from 'lucide-react';
 import api from '../api/axios';
 
 export const Users: React.FC = () => {
   const [users, setUsers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const limit = 10;
 
-  const fetchUsers = async () => {
+  const fetchUsers = async (currentPage = page) => {
     try {
       setLoading(true);
-      const response = await api.get('/admin/users');
+      const response = await api.get(`/admin/users?page=${currentPage}&limit=${limit}`);
       setUsers(response.data.data.users);
+      setTotalPages(response.data.data.pagination.totalPages || 1);
+      setPage(currentPage);
     } catch (error) {
       console.error('Failed to fetch users', error);
       alert('Failed to fetch users');
@@ -20,7 +25,7 @@ export const Users: React.FC = () => {
   };
 
   useEffect(() => {
-    fetchUsers();
+    fetchUsers(1);
   }, []);
 
   const handleDelete = async (id: string) => {
@@ -61,7 +66,7 @@ export const Users: React.FC = () => {
           <h1 className="page-title">User Management</h1>
           <p className="page-subtitle">View and manage all registered users</p>
         </div>
-        <button className="btn btn-outline" onClick={fetchUsers}>
+        <button className="btn btn-outline" onClick={() => fetchUsers(page)}>
           Refresh
         </button>
       </div>
@@ -149,6 +154,32 @@ export const Users: React.FC = () => {
                 )}
               </tbody>
             </table>
+          </div>
+        )}
+
+        {!loading && totalPages > 1 && (
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '24px', paddingTop: '16px', borderTop: '1px solid var(--border-color)' }}>
+            <span style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>
+              Page {page} of {totalPages}
+            </span>
+            <div style={{ display: 'flex', gap: '8px' }}>
+              <button 
+                className="btn btn-outline" 
+                disabled={page === 1}
+                onClick={() => fetchUsers(page - 1)}
+                style={{ padding: '8px', opacity: page === 1 ? 0.5 : 1 }}
+              >
+                <ChevronLeft size={18} />
+              </button>
+              <button 
+                className="btn btn-outline" 
+                disabled={page === totalPages}
+                onClick={() => fetchUsers(page + 1)}
+                style={{ padding: '8px', opacity: page === totalPages ? 0.5 : 1 }}
+              >
+                <ChevronRight size={18} />
+              </button>
+            </div>
           </div>
         )}
       </div>
