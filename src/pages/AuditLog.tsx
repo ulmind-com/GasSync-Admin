@@ -10,6 +10,20 @@ const actionStyle = (action: string): React.CSSProperties => {
   return { background: 'rgba(255,255,255,0.1)', color: 'var(--text-secondary)' };
 };
 
+// Turn a meta key into a friendly label (e.g. "isVerified" -> "Verified").
+const prettyKey = (k: string) =>
+  k.replace(/^is/, '').replace(/([A-Z])/g, ' $1').replace(/^\s/, '').replace(/^./, (c) => c.toUpperCase());
+
+// Render a meta value compactly: booleans as Yes/No, long strings truncated.
+const prettyValue = (v: any): string => {
+  if (typeof v === 'boolean') return v ? 'Yes' : 'No';
+  const s = String(v);
+  return s.length > 28 ? s.slice(0, 28) + '…' : s;
+};
+
+// Short form of a Mongo ObjectId for display.
+const shortId = (id: string) => (id && id.length > 10 ? `…${id.slice(-6)}` : id);
+
 export const AuditLog: React.FC = () => {
   const [logs, setLogs] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -65,10 +79,29 @@ export const AuditLog: React.FC = () => {
                     </td>
                     <td style={{ fontSize: '0.85rem' }}>
                       {log.targetType ? <span style={{ color: 'var(--text-secondary)' }}>{log.targetType}</span> : '—'}
-                      {log.targetId && <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>{log.targetId}</div>}
+                      {log.targetId && (
+                        <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', fontFamily: 'monospace' }} title={log.targetId}>
+                          {shortId(log.targetId)}
+                        </div>
+                      )}
                     </td>
-                    <td style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', maxWidth: '240px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                      {log.meta && Object.keys(log.meta).length > 0 ? JSON.stringify(log.meta) : '—'}
+                    <td style={{ maxWidth: '320px' }}>
+                      {log.meta && Object.keys(log.meta).length > 0 ? (
+                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+                          {Object.entries(log.meta).map(([k, v]) => (
+                            <span
+                              key={k}
+                              title={`${k}: ${String(v)}`}
+                              style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', padding: '2px 8px', borderRadius: '6px', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--border-color)', fontSize: '0.74rem' }}
+                            >
+                              <span style={{ color: 'var(--text-muted)' }}>{prettyKey(k)}</span>
+                              <span style={{ color: 'var(--text-secondary)', fontWeight: 600 }}>{prettyValue(v)}</span>
+                            </span>
+                          ))}
+                        </div>
+                      ) : (
+                        <span style={{ color: 'var(--text-muted)' }}>—</span>
+                      )}
                     </td>
                     <td style={{ color: 'var(--text-secondary)', whiteSpace: 'nowrap' }}>{new Date(log.createdAt).toLocaleString()}</td>
                   </tr>
