@@ -1,6 +1,6 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { LayoutDashboard, Users, Bell, LogOut, Fuel, Database, MessageSquare } from 'lucide-react';
+import { LayoutDashboard, Users, Bell, LogOut, Fuel, Database, MessageSquare, ScanLine, BarChart3, Building2, ShieldAlert, History } from 'lucide-react';
 
 export const Sidebar: React.FC = () => {
   const handleLogout = () => {
@@ -57,6 +57,46 @@ export const Sidebar: React.FC = () => {
         >
           <Bell size={20} />
           Notifications
+        </NavLink>
+
+        <NavLink
+          to="/bills"
+          className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
+        >
+          <ScanLine size={20} />
+          Bills & OCR
+        </NavLink>
+
+        <NavLink
+          to="/analytics"
+          className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
+        >
+          <BarChart3 size={20} />
+          Analytics
+        </NavLink>
+
+        <NavLink
+          to="/stations"
+          className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
+        >
+          <Building2 size={20} />
+          Stations
+        </NavLink>
+
+        <NavLink
+          to="/moderation"
+          className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
+        >
+          <ShieldAlert size={20} />
+          Moderation
+        </NavLink>
+
+        <NavLink
+          to="/audit-log"
+          className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
+        >
+          <History size={20} />
+          Audit Log
         </NavLink>
       </div>
 

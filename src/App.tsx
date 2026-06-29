@@ -8,6 +8,12 @@ import { Users } from './pages/Users';
 import { Notifications } from './pages/Notifications';
 import { CommunityPosts } from './pages/CommunityPosts';
 import { Feedback } from './pages/Feedback';
+import { Bills } from './pages/Bills';
+import { UserDetail } from './pages/UserDetail';
+import { Analytics } from './pages/Analytics';
+import { Stations } from './pages/Stations';
+import { Moderation } from './pages/Moderation';
+import { AuditLog } from './pages/AuditLog';
 
 const App: React.FC = () => {
   return (
@@ -20,9 +26,15 @@ const App: React.FC = () => {
           <Route path="/" element={<Layout />}>
             <Route index element={<Dashboard />} />
             <Route path="users" element={<Users />} />
+            <Route path="users/:id" element={<UserDetail />} />
             <Route path="community-posts" element={<CommunityPosts />} />
             <Route path="feedback" element={<Feedback />} />
             <Route path="notifications" element={<Notifications />} />
+            <Route path="bills" element={<Bills />} />
+            <Route path="analytics" element={<Analytics />} />
+            <Route path="stations" element={<Stations />} />
+            <Route path="moderation" element={<Moderation />} />
+            <Route path="audit-log" element={<AuditLog />} />
           </Route>
           
           <Route path="*" element={<Navigate to="/" replace />} />

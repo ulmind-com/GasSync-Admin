@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { Trash2, Send, Mail, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Trash2, Send, Mail, ChevronLeft, ChevronRight, Eye } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import api from '../api/axios';
 import { Modal } from '../components/Modal';
@@ -7,6 +8,7 @@ import { NotificationPreview } from '../components/NotificationPreview';
 import { confirmToast } from '../lib/confirm';
 
 export const Users: React.FC = () => {
+  const navigate = useNavigate();
   const [users, setUsers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
@@ -171,8 +173,15 @@ export const Users: React.FC = () => {
                     </td>
                     <td>
                       <div className="actions-cell">
-                        <button 
-                          className="icon-btn" 
+                        <button
+                          className="icon-btn"
+                          title="View Details"
+                          onClick={() => navigate(`/users/${user.id}`)}
+                        >
+                          <Eye size={18} />
+                        </button>
+                        <button
+                          className="icon-btn"
                           title="Send Push Notification"
                           onClick={() => openNotifyModal(user.id, user.expoPushToken)}
                           style={{ opacity: user.expoPushToken ? 1 : 0.5, cursor: user.expoPushToken ? 'pointer' : 'not-allowed' }}
