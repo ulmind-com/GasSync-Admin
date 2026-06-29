@@ -25,6 +25,7 @@ export const Login: React.FC = () => {
       }
 
       localStorage.setItem('adminToken', response.data.data.accessToken);
+      localStorage.setItem('adminPermission', response.data.data.user.adminPermission || 'write');
       navigate('/');
     } catch (err: any) {
       setError(err.response?.data?.message || 'Failed to login');

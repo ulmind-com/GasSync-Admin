@@ -3,6 +3,7 @@ import { Trash2, ChevronLeft, ChevronRight, ScanLine, CheckCircle2, XCircle, Gau
 import toast from 'react-hot-toast';
 import api from '../api/axios';
 import { confirmToast } from '../lib/confirm';
+import { canWrite } from '../lib/permissions';
 
 interface BillStats {
   total: number;
@@ -40,6 +41,7 @@ const statusStyle = (status: string): React.CSSProperties => {
 };
 
 export const Bills: React.FC = () => {
+  const writeAccess = canWrite();
   const [stats, setStats] = useState<BillStats | null>(null);
   const [bills, setBills] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -231,14 +233,18 @@ export const Bills: React.FC = () => {
                     <td style={{ color: 'var(--text-secondary)' }}>{new Date(bill.createdAt).toLocaleDateString()}</td>
                     <td>
                       <div className="actions-cell">
-                        <button
-                          className="icon-btn danger"
-                          title="Delete Bill"
-                          onClick={() => handleDelete(bill._id)}
-                          disabled={isDeleting === bill._id}
-                        >
-                          {isDeleting === bill._id ? <div className="spinner" style={{ width: 18, height: 18 }} /> : <Trash2 size={18} />}
-                        </button>
+                        {writeAccess ? (
+                          <button
+                            className="icon-btn danger"
+                            title="Delete Bill"
+                            onClick={() => handleDelete(bill._id)}
+                            disabled={isDeleting === bill._id}
+                          >
+                            {isDeleting === bill._id ? <div className="spinner" style={{ width: 18, height: 18 }} /> : <Trash2 size={18} />}
+                          </button>
+                        ) : (
+                          <span style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>—</span>
+                        )}
                       </div>
                     </td>
                   </tr>

@@ -2,8 +2,10 @@ import React, { useEffect, useState } from 'react';
 import { ChevronLeft, ChevronRight, Fuel, Power, AlertTriangle, Search } from 'lucide-react';
 import toast from 'react-hot-toast';
 import api from '../api/axios';
+import { canWrite } from '../lib/permissions';
 
 export const Stations: React.FC = () => {
+  const writeAccess = canWrite();
   const [stations, setStations] = useState<any[]>([]);
   const [summary, setSummary] = useState<{ activeCount: number; staleCount: number }>({ activeCount: 0, staleCount: 0 });
   const [loading, setLoading] = useState(true);
@@ -131,14 +133,18 @@ export const Stations: React.FC = () => {
                         : <span className="badge" style={{ background: 'rgba(255,255,255,0.1)' }}>Inactive</span>}
                     </td>
                     <td>
-                      <button
-                        className={`btn ${st.isActive ? 'btn-outline' : 'btn-primary'}`}
-                        style={{ padding: '6px 14px', fontSize: '0.85rem' }}
-                        onClick={() => handleToggle(st)}
-                        disabled={toggling === st._id}
-                      >
-                        {toggling === st._id ? <div className="spinner" style={{ width: 14, height: 14 }} /> : (st.isActive ? 'Deactivate' : 'Activate')}
-                      </button>
+                      {writeAccess ? (
+                        <button
+                          className={`btn ${st.isActive ? 'btn-outline' : 'btn-primary'}`}
+                          style={{ padding: '6px 14px', fontSize: '0.85rem' }}
+                          onClick={() => handleToggle(st)}
+                          disabled={toggling === st._id}
+                        >
+                          {toggling === st._id ? <div className="spinner" style={{ width: 14, height: 14 }} /> : (st.isActive ? 'Deactivate' : 'Activate')}
+                        </button>
+                      ) : (
+                        <span style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>—</span>
+                      )}
                     </td>
                   </tr>
                 ))}

@@ -14,6 +14,7 @@ import { Analytics } from './pages/Analytics';
 import { Stations } from './pages/Stations';
 import { Moderation } from './pages/Moderation';
 import { AuditLog } from './pages/AuditLog';
+import { Admins } from './pages/Admins';
 
 const App: React.FC = () => {
   return (
@@ -35,6 +36,7 @@ const App: React.FC = () => {
             <Route path="stations" element={<Stations />} />
             <Route path="moderation" element={<Moderation />} />
             <Route path="audit-log" element={<AuditLog />} />
+            <Route path="admins" element={<Admins />} />
           </Route>
           
           <Route path="*" element={<Navigate to="/" replace />} />

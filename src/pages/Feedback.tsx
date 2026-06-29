@@ -3,6 +3,7 @@ import { MessageSquare, Star, Bug, Trash2, ChevronLeft, ChevronRight, Mail } fro
 import api from '../api/axios';
 import toast from 'react-hot-toast';
 import { confirmToast } from '../lib/confirm';
+import { canWrite } from '../lib/permissions';
 
 interface FeedbackItem {
   _id: string;
@@ -24,6 +25,7 @@ const CATEGORY_META: Record<string, { label: string; icon: React.ReactNode; cls:
 const STATUS_FILTERS = ['all', 'open', 'in-progress', 'resolved'] as const;
 
 export const Feedback: React.FC = () => {
+  const writeAccess = canWrite();
   const [items, setItems] = useState<FeedbackItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
@@ -139,21 +141,23 @@ export const Feedback: React.FC = () => {
                     <select
                       className={`status-select status-${f.status}`}
                       value={f.status}
-                      disabled={busyId === f._id}
+                      disabled={busyId === f._id || !writeAccess}
                       onChange={(e) => handleStatusChange(f._id, e.target.value)}
                     >
                       <option value="open">Open</option>
                       <option value="in-progress">In Progress</option>
                       <option value="resolved">Resolved</option>
                     </select>
-                    <button
-                      className="icon-btn danger"
-                      title="Delete feedback"
-                      disabled={busyId === f._id}
-                      onClick={() => handleDelete(f._id)}
-                    >
-                      <Trash2 size={17} />
-                    </button>
+                    {writeAccess && (
+                      <button
+                        className="icon-btn danger"
+                        title="Delete feedback"
+                        disabled={busyId === f._id}
+                        onClick={() => handleDelete(f._id)}
+                      >
+                        <Trash2 size={17} />
+                      </button>
+                    )}
                   </div>
                 </div>
 

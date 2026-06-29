@@ -3,6 +3,7 @@ import { Database, ChevronLeft, ChevronRight, MapPin, Trash2, ExternalLink } fro
 import api from '../api/axios';
 import toast from 'react-hot-toast';
 import { confirmToast } from '../lib/confirm';
+import { canWrite } from '../lib/permissions';
 
 interface Post {
   _id: string;
@@ -44,6 +45,7 @@ const locationLabel = (post: Post): string => {
 };
 
 export const CommunityPosts: React.FC = () => {
+  const writeAccess = canWrite();
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
@@ -188,18 +190,22 @@ export const CommunityPosts: React.FC = () => {
                       </td>
                       <td>
                         <div className="actions-cell" style={{ justifyContent: 'flex-end' }}>
-                          <button
-                            className="icon-btn danger"
-                            title="Delete Post"
-                            onClick={() => handleDelete(post._id)}
-                            disabled={deletingId === post._id}
-                          >
-                            {deletingId === post._id ? (
-                              <div className="spinner" style={{ width: 18, height: 18 }} />
-                            ) : (
-                              <Trash2 size={18} />
-                            )}
-                          </button>
+                          {writeAccess ? (
+                            <button
+                              className="icon-btn danger"
+                              title="Delete Post"
+                              onClick={() => handleDelete(post._id)}
+                              disabled={deletingId === post._id}
+                            >
+                              {deletingId === post._id ? (
+                                <div className="spinner" style={{ width: 18, height: 18 }} />
+                              ) : (
+                                <Trash2 size={18} />
+                              )}
+                            </button>
+                          ) : (
+                            <span style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>—</span>
+                          )}
                         </div>
                       </td>
                     </tr>

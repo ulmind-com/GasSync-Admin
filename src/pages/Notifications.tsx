@@ -4,8 +4,10 @@ import toast from 'react-hot-toast';
 import api from '../api/axios';
 import { NotificationPreview } from '../components/NotificationPreview';
 import { confirmToast } from '../lib/confirm';
+import { canWrite } from '../lib/permissions';
 
 export const Notifications: React.FC = () => {
+  const writeAccess = canWrite();
   const [title, setTitle] = useState('');
   const [body, setBody] = useState('');
   const [imageFile, setImageFile] = useState<File | null>(null);
@@ -112,11 +114,12 @@ export const Notifications: React.FC = () => {
               />
             </div>
 
-            <button 
-              type="submit" 
-              className="btn btn-primary" 
-              style={{ width: 'auto', marginTop: '16px' }}
-              disabled={loading}
+            <button
+              type="submit"
+              className="btn btn-primary"
+              style={{ width: 'auto', marginTop: '16px', opacity: writeAccess ? 1 : 0.5, cursor: writeAccess ? 'pointer' : 'not-allowed' }}
+              disabled={loading || !writeAccess}
+              title={writeAccess ? '' : 'Read-only access — broadcasting disabled'}
             >
               {loading ? <div className="spinner" style={{ width: 18, height: 18, marginRight: '8px' }} /> : <Send size={18} style={{ marginRight: '8px' }} />}
               Send Broadcast

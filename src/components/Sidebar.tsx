@@ -1,10 +1,14 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { LayoutDashboard, Users, Bell, LogOut, Fuel, Database, MessageSquare, ScanLine, BarChart3, Building2, ShieldAlert, History } from 'lucide-react';
+import { LayoutDashboard, Users, Bell, LogOut, Fuel, Database, MessageSquare, ScanLine, BarChart3, Building2, ShieldAlert, History, UserCog } from 'lucide-react';
+import { canWrite } from '../lib/permissions';
 
 export const Sidebar: React.FC = () => {
+  const writeAccess = canWrite();
+
   const handleLogout = () => {
     localStorage.removeItem('adminToken');
+    localStorage.removeItem('adminPermission');
     window.location.href = '/login';
   };
 
@@ -98,6 +102,16 @@ export const Sidebar: React.FC = () => {
           <History size={20} />
           Audit Log
         </NavLink>
+
+        {writeAccess && (
+          <NavLink
+            to="/admins"
+            className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
+          >
+            <UserCog size={20} />
+            Admins
+          </NavLink>
+        )}
       </div>
 
       <div style={{ marginTop: 'auto' }}>

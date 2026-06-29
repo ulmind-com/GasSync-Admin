@@ -6,9 +6,11 @@ import api from '../api/axios';
 import { Modal } from '../components/Modal';
 import { NotificationPreview } from '../components/NotificationPreview';
 import { confirmToast } from '../lib/confirm';
+import { canWrite } from '../lib/permissions';
 
 export const Users: React.FC = () => {
   const navigate = useNavigate();
+  const writeAccess = canWrite();
   const [users, setUsers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
@@ -180,22 +182,26 @@ export const Users: React.FC = () => {
                         >
                           <Eye size={18} />
                         </button>
-                        <button
-                          className="icon-btn"
-                          title="Send Push Notification"
-                          onClick={() => openNotifyModal(user.id, user.expoPushToken)}
-                          style={{ opacity: user.expoPushToken ? 1 : 0.5, cursor: user.expoPushToken ? 'pointer' : 'not-allowed' }}
-                        >
-                          <Send size={18} />
-                        </button>
-                        <button 
-                          className="icon-btn danger" 
-                          title="Delete User"
-                          onClick={() => handleDelete(user.id)}
-                          disabled={isDeleting === user.id}
-                        >
-                          {isDeleting === user.id ? <div className="spinner" style={{ width: 18, height: 18 }} /> : <Trash2 size={18} />}
-                        </button>
+                        {writeAccess && (
+                          <>
+                            <button
+                              className="icon-btn"
+                              title="Send Push Notification"
+                              onClick={() => openNotifyModal(user.id, user.expoPushToken)}
+                              style={{ opacity: user.expoPushToken ? 1 : 0.5, cursor: user.expoPushToken ? 'pointer' : 'not-allowed' }}
+                            >
+                              <Send size={18} />
+                            </button>
+                            <button
+                              className="icon-btn danger"
+                              title="Delete User"
+                              onClick={() => handleDelete(user.id)}
+                              disabled={isDeleting === user.id}
+                            >
+                              {isDeleting === user.id ? <div className="spinner" style={{ width: 18, height: 18 }} /> : <Trash2 size={18} />}
+                            </button>
+                          </>
+                        )}
                       </div>
                     </td>
                   </tr>

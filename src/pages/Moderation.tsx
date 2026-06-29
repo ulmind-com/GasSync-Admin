@@ -3,8 +3,10 @@ import { ShieldAlert, CheckCircle2, XCircle, Trash2 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import api from '../api/axios';
 import { confirmToast } from '../lib/confirm';
+import { canWrite } from '../lib/permissions';
 
 export const Moderation: React.FC = () => {
+  const writeAccess = canWrite();
   const [outliers, setOutliers] = useState<any[]>([]);
   const [averages, setAverages] = useState<Array<{ fuelType: string; avg: number }>>([]);
   const [deviation, setDeviation] = useState(0.4);
@@ -126,17 +128,21 @@ export const Moderation: React.FC = () => {
                           : <span className="badge" style={{ background: 'rgba(255,255,255,0.1)' }}>Unverified</span>}
                       </td>
                       <td>
-                        <div className="actions-cell">
-                          <button className="icon-btn" title="Mark Verified" onClick={() => handleVerify(o, true)} disabled={busy === o._id} style={{ color: '#34d399' }}>
-                            <CheckCircle2 size={18} />
-                          </button>
-                          <button className="icon-btn" title="Mark Unverified" onClick={() => handleVerify(o, false)} disabled={busy === o._id} style={{ color: '#fbbf24' }}>
-                            <XCircle size={18} />
-                          </button>
-                          <button className="icon-btn danger" title="Delete" onClick={() => handleDelete(o)} disabled={busy === o._id}>
-                            <Trash2 size={18} />
-                          </button>
-                        </div>
+                        {writeAccess ? (
+                          <div className="actions-cell">
+                            <button className="icon-btn" title="Mark Verified" onClick={() => handleVerify(o, true)} disabled={busy === o._id} style={{ color: '#34d399' }}>
+                              <CheckCircle2 size={18} />
+                            </button>
+                            <button className="icon-btn" title="Mark Unverified" onClick={() => handleVerify(o, false)} disabled={busy === o._id} style={{ color: '#fbbf24' }}>
+                              <XCircle size={18} />
+                            </button>
+                            <button className="icon-btn danger" title="Delete" onClick={() => handleDelete(o)} disabled={busy === o._id}>
+                              <Trash2 size={18} />
+                            </button>
+                          </div>
+                        ) : (
+                          <span style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>—</span>
+                        )}
                       </td>
                     </tr>
                   );
