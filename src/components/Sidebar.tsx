@@ -1,6 +1,6 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { LayoutDashboard, Users, Bell, LogOut, Fuel, Database, MessageSquare, ScanLine, BarChart3, ShieldAlert, History, UserCog } from 'lucide-react';
+import { LayoutDashboard, Users, Bell, LogOut, Fuel, Database, MessageSquare, ScanLine, BarChart3, Building2, ShieldAlert, History, UserCog } from 'lucide-react';
 import { canWrite } from '../lib/permissions';
 
 export const Sidebar: React.FC = () => {
@@ -77,6 +77,14 @@ export const Sidebar: React.FC = () => {
         >
           <BarChart3 size={20} />
           Analytics
+        </NavLink>
+
+        <NavLink
+          to="/stations"
+          className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
+        >
+          <Building2 size={20} />
+          Stations
         </NavLink>
 
         <NavLink

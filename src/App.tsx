@@ -11,6 +11,7 @@ import { Feedback } from './pages/Feedback';
 import { Bills } from './pages/Bills';
 import { UserDetail } from './pages/UserDetail';
 import { Analytics } from './pages/Analytics';
+import { Stations } from './pages/Stations';
 import { Moderation } from './pages/Moderation';
 import { AuditLog } from './pages/AuditLog';
 import { Admins } from './pages/Admins';
@@ -32,6 +33,7 @@ const App: React.FC = () => {
             <Route path="notifications" element={<Notifications />} />
             <Route path="bills" element={<Bills />} />
             <Route path="analytics" element={<Analytics />} />
+            <Route path="stations" element={<Stations />} />
             <Route path="moderation" element={<Moderation />} />
             <Route path="audit-log" element={<AuditLog />} />
             <Route path="admins" element={<Admins />} />

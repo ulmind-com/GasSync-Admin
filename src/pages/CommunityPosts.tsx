@@ -53,7 +53,9 @@ export const CommunityPosts: React.FC = () => {
   const [totalPages, setTotalPages] = useState(1);
   const [total, setTotal] = useState(0);
   const [deletingId, setDeletingId] = useState<string | null>(null);
-  const limit = 15;
+  const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [bulkDeleting, setBulkDeleting] = useState(false);
+  const limit = 10;
 
   const fetchPosts = async (currentPage: number) => {
     try {
@@ -63,6 +65,7 @@ export const CommunityPosts: React.FC = () => {
       setTotalPages(response.data.data.pagination.totalPages);
       setTotal(response.data.data.pagination.total);
       setPage(currentPage);
+      setSelected(new Set()); // clear selection when the visible page changes
     } catch (error) {
       console.error('Failed to fetch community posts', error);
       toast.error('Failed to load community posts');
@@ -98,6 +101,47 @@ export const CommunityPosts: React.FC = () => {
     }
   };
 
+  const toggleOne = (id: string) => {
+    setSelected((prev) => {
+      const next = new Set(prev);
+      next.has(id) ? next.delete(id) : next.add(id);
+      return next;
+    });
+  };
+
+  const allOnPageSelected = posts.length > 0 && posts.every((p) => selected.has(p._id));
+  const toggleAllOnPage = () => {
+    setSelected((prev) => {
+      const next = new Set(prev);
+      if (allOnPageSelected) posts.forEach((p) => next.delete(p._id));
+      else posts.forEach((p) => next.add(p._id));
+      return next;
+    });
+  };
+
+  const handleBulkDelete = async () => {
+    const ids = Array.from(selected);
+    if (ids.length === 0) return;
+    const ok = await confirmToast({
+      title: `Delete ${ids.length} post${ids.length > 1 ? 's' : ''}?`,
+      message: 'The selected community posts will be permanently removed from the database.',
+      confirmLabel: 'Delete',
+    });
+    if (!ok) return;
+
+    setBulkDeleting(true);
+    try {
+      const res = await api.post('/admin/community-posts/bulk-delete', { ids });
+      toast.success(res.data.message || `Deleted ${ids.length} post(s)`);
+      const remaining = posts.length - ids.length;
+      fetchPosts(remaining <= 0 && page > 1 ? page - 1 : page);
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || 'Failed to delete posts');
+    } finally {
+      setBulkDeleting(false);
+    }
+  };
+
   return (
     <div className="fade-in">
       <div className="page-header" style={{ marginBottom: '32px' }}>
@@ -111,6 +155,19 @@ export const CommunityPosts: React.FC = () => {
         </p>
       </div>
 
+      {writeAccess && selected.size > 0 && (
+        <div className="glass-panel" style={{ padding: '12px 20px', marginBottom: '16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', border: '1px solid var(--accent-primary)' }}>
+          <span style={{ fontWeight: 600 }}>{selected.size} selected</span>
+          <div style={{ display: 'flex', gap: '10px' }}>
+            <button className="btn btn-outline" onClick={() => setSelected(new Set())} disabled={bulkDeleting}>Clear</button>
+            <button className="btn btn-danger" onClick={handleBulkDelete} disabled={bulkDeleting}>
+              {bulkDeleting ? <div className="spinner" style={{ width: 16, height: 16 }} /> : <Trash2 size={16} />}
+              Delete Selected
+            </button>
+          </div>
+        </div>
+      )}
+
       <div className="glass-panel">
         {loading && posts.length === 0 ? (
           <div style={{ display: 'flex', justifyContent: 'center', padding: '60px' }}>
@@ -121,6 +178,11 @@ export const CommunityPosts: React.FC = () => {
             <table className="table">
               <thead>
                 <tr>
+                  {writeAccess && (
+                    <th style={{ width: '36px' }}>
+                      <input type="checkbox" checked={allOnPageSelected} onChange={toggleAllOnPage} title="Select all on this page" />
+                    </th>
+                  )}
                   <th>Reporter</th>
                   <th>Location / Station</th>
                   <th>Fuel Type</th>
@@ -135,7 +197,12 @@ export const CommunityPosts: React.FC = () => {
                   const label = locationLabel(post);
                   const subtitle = post.station?.address || post.stationAddress;
                   return (
-                    <tr key={post._id}>
+                    <tr key={post._id} style={selected.has(post._id) ? { background: 'rgba(91,140,255,0.08)' } : undefined}>
+                      {writeAccess && (
+                        <td>
+                          <input type="checkbox" checked={selected.has(post._id)} onChange={() => toggleOne(post._id)} />
+                        </td>
+                      )}
                       <td>
                         <div>
                           <div style={{ fontWeight: 500, color: 'white' }}>
@@ -218,7 +285,7 @@ export const CommunityPosts: React.FC = () => {
                 })}
                 {posts.length === 0 && (
                   <tr>
-                    <td colSpan={6} style={{ textAlign: 'center', padding: '40px', color: 'var(--text-secondary)' }}>
+                    <td colSpan={writeAccess ? 7 : 6} style={{ textAlign: 'center', padding: '40px', color: 'var(--text-secondary)' }}>
                       No community posts found.
                     </td>
                   </tr>
