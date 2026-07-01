@@ -56,7 +56,7 @@ export const Moderation: React.FC = () => {
 
     setBusy(post._id);
     try {
-      await api.delete(`/admin/community-posts/${post._id}`);
+      await api.delete(`/admin/prices/${post._id}`);
       setOutliers(outliers.filter((o) => o._id !== post._id));
       toast.success('Post deleted');
     } catch (error: any) {

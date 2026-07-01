@@ -8,8 +8,9 @@ import { canWrite } from '../lib/permissions';
 interface Post {
   _id: string;
   fuelType: string;
-  price: number;
+  price: number | null;
   isVerified: boolean;
+  status?: string;
   createdAt: string;
   city?: string;
   state?: string;
@@ -181,9 +182,13 @@ export const CommunityPosts: React.FC = () => {
                         </span>
                       </td>
                       <td>
-                        <strong className="num" style={{ color: 'var(--success)', fontSize: '0.98rem' }}>
-                          ${post.price.toFixed(2)}
-                        </strong>
+                        {post.price != null ? (
+                          <strong className="num" style={{ color: 'var(--success)', fontSize: '0.98rem' }}>
+                            ${post.price.toFixed(2)}
+                          </strong>
+                        ) : (
+                          <span style={{ color: 'var(--text-muted)' }}>—</span>
+                        )}
                       </td>
                       <td className="num" style={{ color: 'var(--text-secondary)', whiteSpace: 'nowrap' }}>
                         {new Date(post.createdAt).toLocaleString()}
