@@ -39,11 +39,24 @@ export const Stations: React.FC = () => {
     setPriceInputs({});
     setModalOpen(true);
   };
-  const openEdit = (st: any) => {
+  const openEdit = async (st: any) => {
     setEditingId(st._id);
     setForm({ name: st.name || '', brand: st.brand || '', address: st.address || '', city: st.city || '', state: st.state || '', zipCode: st.zipCode || '', lat: '', lng: '' });
     setPriceInputs({});
     setModalOpen(true);
+    // Pull the station's current prices so the form shows what's already set —
+    // the admin only tweaks what they want, the rest stay unchanged.
+    try {
+      const res = await api.get(`/admin/stations/${st._id}`);
+      const d = res.data.data;
+      const s = d.station;
+      setForm({ name: s.name || '', brand: s.brand || '', address: s.address || '', city: s.city || '', state: s.state || '', zipCode: s.zipCode || '', lat: '', lng: '' });
+      const pi: Record<string, string> = {};
+      for (const p of d.marketPrices || []) pi[p.type] = String(p.price);
+      setPriceInputs(pi);
+    } catch {
+      /* keep the row values if the detail fetch fails */
+    }
   };
 
   const saveStation = async () => {
