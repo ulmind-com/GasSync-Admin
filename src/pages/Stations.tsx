@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { ChevronLeft, ChevronRight, Fuel, AlertTriangle, Search, Trash2, Plus, Pencil, X } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Fuel, AlertTriangle, Search, Trash2, Plus, Pencil, X, Eye } from 'lucide-react';
 import toast from 'react-hot-toast';
 import api from '../api/axios';
 import { confirmToast } from '../lib/confirm';
@@ -73,6 +73,27 @@ export const Stations: React.FC = () => {
       toast.error(e.response?.data?.message || 'Failed to save');
     } finally {
       setSaving(false);
+    }
+  };
+
+  // View details
+  const [viewOpen, setViewOpen] = useState(false);
+  const [viewLoading, setViewLoading] = useState(false);
+  const [viewData, setViewData] = useState<any>(null);
+  const fuelLabel = (t: string) => FUELS.find((f) => f.key === t)?.label || t;
+
+  const openView = async (st: any) => {
+    setViewOpen(true);
+    setViewLoading(true);
+    setViewData(null);
+    try {
+      const res = await api.get(`/admin/stations/${st._id}`);
+      setViewData(res.data.data);
+    } catch (e: any) {
+      toast.error(e.response?.data?.message || 'Failed to load details');
+      setViewOpen(false);
+    } finally {
+      setViewLoading(false);
     }
   };
 
@@ -277,6 +298,7 @@ export const Stations: React.FC = () => {
                     {writeAccess && (
                       <td>
                         <div style={{ display: 'flex', gap: '6px', justifyContent: 'flex-end' }}>
+                          <button className="btn btn-outline" style={{ padding: '6px' }} title="View details" onClick={() => openView(st)}><Eye size={15} /></button>
                           <button className="btn btn-outline" style={{ padding: '6px' }} title="Edit / set price" onClick={() => openEdit(st)}><Pencil size={15} /></button>
                           <button className="btn btn-outline" style={{ padding: '6px', color: '#f87171' }} title="Delete" onClick={() => deleteOne(st)}><Trash2 size={15} /></button>
                         </div>
@@ -309,7 +331,7 @@ export const Stations: React.FC = () => {
           onClick={() => !saving && setModalOpen(false)}
           style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.55)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100, padding: '20px' }}
         >
-          <div className="glass-panel" onClick={(e) => e.stopPropagation()} style={{ width: '100%', maxWidth: '520px', padding: '24px', maxHeight: '90vh', overflowY: 'auto' }}>
+          <div onClick={(e) => e.stopPropagation()} style={{ width: '100%', maxWidth: '520px', padding: '24px', maxHeight: '90vh', overflowY: 'auto', background: 'var(--bg-panel-solid)', border: '1px solid var(--border-strong)', borderRadius: '16px', boxShadow: 'var(--shadow-lg)' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '18px' }}>
               <h2 style={{ margin: 0, fontSize: '1.25rem' }}>{editingId ? 'Edit Station' : 'Add Station'}</h2>
               <button className="btn btn-outline" style={{ padding: '6px' }} onClick={() => setModalOpen(false)} disabled={saving}><X size={16} /></button>
@@ -349,7 +371,7 @@ export const Stations: React.FC = () => {
                     </div>
                   ))}
                 </div>
-                <p style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', marginTop: '8px' }}>Admin prices show to users instantly and are not overwritten by the automatic refresh.</p>
+                <p style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', marginTop: '8px' }}>Prices show to users instantly, then refresh on the normal cycle like every other station.</p>
               </div>
             )}
 
@@ -360,6 +382,80 @@ export const Stations: React.FC = () => {
                 {editingId ? 'Save changes' : 'Create station'}
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* VIEW DETAILS MODAL */}
+      {viewOpen && (
+        <div
+          onClick={() => setViewOpen(false)}
+          style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.55)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100, padding: '20px' }}
+        >
+          <div onClick={(e) => e.stopPropagation()} style={{ width: '100%', maxWidth: '520px', padding: '24px', maxHeight: '90vh', overflowY: 'auto', background: 'var(--bg-panel-solid)', border: '1px solid var(--border-strong)', borderRadius: '16px', boxShadow: 'var(--shadow-lg)' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '18px' }}>
+              <h2 style={{ margin: 0, fontSize: '1.25rem' }}>Station Details</h2>
+              <button className="btn btn-outline" style={{ padding: '6px' }} onClick={() => setViewOpen(false)}><X size={16} /></button>
+            </div>
+
+            {viewLoading || !viewData ? (
+              <div style={{ padding: '40px', display: 'flex', justifyContent: 'center' }}><div className="spinner" /></div>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+                <div>
+                  <div style={{ fontSize: '1.15rem', fontWeight: 700 }}>{viewData.station.name}</div>
+                  <div style={{ color: 'var(--text-secondary)' }}>{viewData.station.brand}</div>
+                </div>
+
+                {(() => {
+                  const s = viewData.station;
+                  const rows: [string, any][] = [
+                    ['Address', s.address || '—'],
+                    ['City', s.city || '—'],
+                    ['State', s.state || '—'],
+                    ['Zip code', s.zipCode || '—'],
+                    ['Coordinates', `${viewData.coordinates.lat}, ${viewData.coordinates.lng}`],
+                    ['Status', s.isActive ? 'Active' : 'Inactive'],
+                    ['Community reports', viewData.communityCount],
+                    ['Last price update', s.lastPriceUpdate ? new Date(s.lastPriceUpdate).toLocaleString() : 'Never'],
+                    ['Price fetched at', viewData.priceFetchedAt ? new Date(viewData.priceFetchedAt).toLocaleString() : '—'],
+                  ];
+                  return (
+                    <div style={{ display: 'grid', gridTemplateColumns: '140px 1fr', rowGap: '8px', columnGap: '12px', fontSize: '0.9rem' }}>
+                      {rows.map(([k, v]) => (
+                        <React.Fragment key={k}>
+                          <div style={{ color: 'var(--text-secondary)' }}>{k}</div>
+                          <div style={{ fontWeight: 500 }}>{v}</div>
+                        </React.Fragment>
+                      ))}
+                    </div>
+                  );
+                })()}
+
+                <div style={{ paddingTop: '12px', borderTop: '1px solid var(--border-color)' }}>
+                  <div style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', marginBottom: '8px' }}>Current market prices</div>
+                  {viewData.marketPrices.length === 0 ? (
+                    <div style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>No price data yet.</div>
+                  ) : (
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
+                      {viewData.marketPrices.map((p: any) => (
+                        <div key={p.type} style={{ padding: '8px 14px', borderRadius: '10px', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--border-color)' }}>
+                          <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>{fuelLabel(p.type)}</div>
+                          <div style={{ fontWeight: 700 }}>${Number(p.price).toFixed(3)}</div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '6px' }}>
+                  {writeAccess && (
+                    <button className="btn btn-primary" onClick={() => { setViewOpen(false); openEdit(viewData.station); }}><Pencil size={15} /> Edit</button>
+                  )}
+                  <button className="btn btn-outline" onClick={() => setViewOpen(false)}>Close</button>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       )}
