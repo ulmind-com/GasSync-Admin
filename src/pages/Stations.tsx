@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { ChevronLeft, ChevronRight, Fuel, AlertTriangle, Search, Trash2 } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Fuel, AlertTriangle, Search, Trash2, Plus, Pencil, X } from 'lucide-react';
 import toast from 'react-hot-toast';
 import api from '../api/axios';
 import { confirmToast } from '../lib/confirm';
@@ -18,6 +18,75 @@ export const Stations: React.FC = () => {
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [deleting, setDeleting] = useState(false);
   const limit = 10;
+
+  // Add/Edit modal
+  const FUELS: { key: string; label: string }[] = [
+    { key: 'REGULAR_UNLEADED', label: 'Regular 87' },
+    { key: 'MIDGRADE', label: 'Plus 89' },
+    { key: 'PREMIUM', label: 'Premium 93' },
+    { key: 'DIESEL', label: 'Diesel' },
+  ];
+  const emptyForm = { name: '', brand: '', address: '', city: '', state: '', zipCode: '', lat: '', lng: '' };
+  const [modalOpen, setModalOpen] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null); // null = adding
+  const [form, setForm] = useState<typeof emptyForm>(emptyForm);
+  const [priceInputs, setPriceInputs] = useState<Record<string, string>>({});
+  const [saving, setSaving] = useState(false);
+
+  const openAdd = () => {
+    setEditingId(null);
+    setForm(emptyForm);
+    setPriceInputs({});
+    setModalOpen(true);
+  };
+  const openEdit = (st: any) => {
+    setEditingId(st._id);
+    setForm({ name: st.name || '', brand: st.brand || '', address: st.address || '', city: st.city || '', state: st.state || '', zipCode: st.zipCode || '', lat: '', lng: '' });
+    setPriceInputs({});
+    setModalOpen(true);
+  };
+
+  const saveStation = async () => {
+    if (!form.name.trim()) { toast.error('Name is required'); return; }
+    setSaving(true);
+    try {
+      if (editingId) {
+        await api.patch(`/admin/stations/${editingId}`, {
+          name: form.name, brand: form.brand, address: form.address,
+          city: form.city, state: form.state, zipCode: form.zipCode,
+        });
+      } else {
+        if (!form.lat || !form.lng) { toast.error('Latitude & Longitude required for a new station'); setSaving(false); return; }
+        await api.post('/admin/stations', form);
+      }
+      // Save any entered prices (only for existing/just-updated stations)
+      const prices = FUELS
+        .filter((f) => priceInputs[f.key] && parseFloat(priceInputs[f.key]) > 0)
+        .map((f) => ({ type: f.key, price: parseFloat(priceInputs[f.key]) }));
+      if (prices.length > 0 && editingId) {
+        await api.post(`/admin/stations/${editingId}/price`, { prices });
+      }
+      toast.success(editingId ? 'Station updated' : 'Station created');
+      setModalOpen(false);
+      fetchStations(page);
+    } catch (e: any) {
+      toast.error(e.response?.data?.message || 'Failed to save');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const deleteOne = async (st: any) => {
+    const ok = await confirmToast({ title: `Delete "${st.name}"?`, message: 'This station will be permanently removed.', confirmLabel: 'Delete' });
+    if (!ok) return;
+    try {
+      await api.delete(`/admin/stations/${st._id}`);
+      toast.success('Station deleted');
+      fetchStations(stations.length === 1 && page > 1 ? page - 1 : page);
+    } catch (e: any) {
+      toast.error(e.response?.data?.message || 'Failed to delete');
+    }
+  };
 
   const fetchStations = async (currentPage = page, term = search, status = statusFilter) => {
     try {
@@ -94,7 +163,12 @@ export const Stations: React.FC = () => {
           <h1 className="page-title">Stations</h1>
           <p className="page-subtitle">{total.toLocaleString()} stations · manage and clean up data</p>
         </div>
-        <button className="btn btn-outline" onClick={() => fetchStations(page)}>Refresh</button>
+        <div style={{ display: 'flex', gap: '10px' }}>
+          {writeAccess && (
+            <button className="btn btn-primary" onClick={openAdd}><Plus size={16} /> Add Station</button>
+          )}
+          <button className="btn btn-outline" onClick={() => fetchStations(page)}>Refresh</button>
+        </div>
       </div>
 
       {/* SUMMARY */}
@@ -165,6 +239,7 @@ export const Stations: React.FC = () => {
                   <th>Location</th>
                   <th>Last Price Update</th>
                   <th>Status</th>
+                  {writeAccess && <th style={{ textAlign: 'right' }}>Actions</th>}
                 </tr>
               </thead>
               <tbody>
@@ -199,10 +274,18 @@ export const Stations: React.FC = () => {
                         ? <span className="badge badge-success">Active</span>
                         : <span className="badge" style={{ background: 'rgba(255,255,255,0.1)' }}>Inactive</span>}
                     </td>
+                    {writeAccess && (
+                      <td>
+                        <div style={{ display: 'flex', gap: '6px', justifyContent: 'flex-end' }}>
+                          <button className="btn btn-outline" style={{ padding: '6px' }} title="Edit / set price" onClick={() => openEdit(st)}><Pencil size={15} /></button>
+                          <button className="btn btn-outline" style={{ padding: '6px', color: '#f87171' }} title="Delete" onClick={() => deleteOne(st)}><Trash2 size={15} /></button>
+                        </div>
+                      </td>
+                    )}
                   </tr>
                 ))}
                 {stations.length === 0 && (
-                  <tr><td colSpan={writeAccess ? 5 : 4} style={{ textAlign: 'center', padding: '32px', color: 'var(--text-secondary)' }}>No stations found.</td></tr>
+                  <tr><td colSpan={writeAccess ? 6 : 4} style={{ textAlign: 'center', padding: '32px', color: 'var(--text-secondary)' }}>No stations found.</td></tr>
                 )}
               </tbody>
             </table>
@@ -219,6 +302,67 @@ export const Stations: React.FC = () => {
           </div>
         )}
       </div>
+
+      {/* ADD / EDIT MODAL */}
+      {modalOpen && (
+        <div
+          onClick={() => !saving && setModalOpen(false)}
+          style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.55)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100, padding: '20px' }}
+        >
+          <div className="glass-panel" onClick={(e) => e.stopPropagation()} style={{ width: '100%', maxWidth: '520px', padding: '24px', maxHeight: '90vh', overflowY: 'auto' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '18px' }}>
+              <h2 style={{ margin: 0, fontSize: '1.25rem' }}>{editingId ? 'Edit Station' : 'Add Station'}</h2>
+              <button className="btn btn-outline" style={{ padding: '6px' }} onClick={() => setModalOpen(false)} disabled={saving}><X size={16} /></button>
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+              <div style={{ gridColumn: '1 / -1' }}>
+                <label className="form-label">Station name *</label>
+                <input className="form-input" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
+              </div>
+              <div><label className="form-label">Brand</label><input className="form-input" value={form.brand} onChange={(e) => setForm({ ...form, brand: e.target.value })} /></div>
+              <div><label className="form-label">Zip code</label><input className="form-input" value={form.zipCode} onChange={(e) => setForm({ ...form, zipCode: e.target.value })} /></div>
+              <div style={{ gridColumn: '1 / -1' }}><label className="form-label">Address</label><input className="form-input" value={form.address} onChange={(e) => setForm({ ...form, address: e.target.value })} /></div>
+              <div><label className="form-label">City</label><input className="form-input" value={form.city} onChange={(e) => setForm({ ...form, city: e.target.value })} /></div>
+              <div><label className="form-label">State</label><input className="form-input" value={form.state} onChange={(e) => setForm({ ...form, state: e.target.value })} /></div>
+              {!editingId && (
+                <>
+                  <div><label className="form-label">Latitude *</label><input className="form-input" value={form.lat} onChange={(e) => setForm({ ...form, lat: e.target.value })} placeholder="e.g. 40.6070" /></div>
+                  <div><label className="form-label">Longitude *</label><input className="form-input" value={form.lng} onChange={(e) => setForm({ ...form, lng: e.target.value })} placeholder="e.g. -75.4932" /></div>
+                </>
+              )}
+            </div>
+
+            {/* PRICE — only for existing stations (needs an id) */}
+            {editingId && (
+              <div style={{ marginTop: '18px', paddingTop: '16px', borderTop: '1px solid var(--border-color)' }}>
+                <label className="form-label" style={{ marginBottom: '10px', display: 'block' }}>Set price / gallon (leave blank to skip)</label>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                  {FUELS.map((f) => (
+                    <div key={f.key}>
+                      <label className="form-label" style={{ fontSize: '0.8rem' }}>{f.label}</label>
+                      <div style={{ position: 'relative' }}>
+                        <span style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }}>$</span>
+                        <input className="form-input" style={{ paddingLeft: '22px' }} inputMode="decimal" placeholder="0.000"
+                          value={priceInputs[f.key] || ''} onChange={(e) => setPriceInputs({ ...priceInputs, [f.key]: e.target.value })} />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                <p style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', marginTop: '8px' }}>Admin prices show to users instantly and are not overwritten by the automatic refresh.</p>
+              </div>
+            )}
+
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '20px' }}>
+              <button className="btn btn-outline" onClick={() => setModalOpen(false)} disabled={saving}>Cancel</button>
+              <button className="btn btn-primary" onClick={saveStation} disabled={saving}>
+                {saving ? <div className="spinner" style={{ width: 16, height: 16 }} /> : null}
+                {editingId ? 'Save changes' : 'Create station'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
