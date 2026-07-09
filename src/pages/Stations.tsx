@@ -1,3 +1,4 @@
+// Stations — intelligent multi-field search (zip, address, city, state, name)
 import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { ChevronLeft, ChevronRight, Fuel, AlertTriangle, Search, Trash2, Plus, Pencil, X, Eye } from 'lucide-react';
 import toast from 'react-hot-toast';
