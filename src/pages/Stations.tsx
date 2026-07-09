@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { ChevronLeft, ChevronRight, Fuel, AlertTriangle, Search, Trash2, Plus, Pencil, X, Eye } from 'lucide-react';
 import toast from 'react-hot-toast';
 import api from '../api/axios';
@@ -18,6 +18,52 @@ export const Stations: React.FC = () => {
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [deleting, setDeleting] = useState(false);
   const limit = 10;
+
+  // ── Debounced search ──
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const debouncedFetch = useCallback((term: string) => {
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => {
+      fetchStations(1, term, statusFilter);
+    }, 400);
+  }, [statusFilter]);
+
+  // Clean up debounce on unmount
+  useEffect(() => {
+    return () => { if (debounceRef.current) clearTimeout(debounceRef.current); };
+  }, []);
+
+  const handleSearchChange = (value: string) => {
+    setSearch(value);
+    debouncedFetch(value);
+  };
+
+  const clearSearch = () => {
+    setSearch('');
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    fetchStations(1, '', statusFilter);
+  };
+
+  // ── Smart search hint tags ──
+  const US_STATES = new Set([
+    'AL','AK','AZ','AR','CA','CO','CT','DE','FL','GA','HI','ID','IL','IN',
+    'IA','KS','KY','LA','ME','MD','MA','MI','MN','MS','MO','MT','NE','NV',
+    'NH','NJ','NM','NY','NC','ND','OH','OK','OR','PA','RI','SC','SD','TN',
+    'TX','UT','VT','VA','WA','WV','WI','WY','DC',
+  ]);
+
+  const getSearchHints = (query: string): { label: string; type: string }[] => {
+    if (!query.includes(',')) return [];
+    const parts = query.split(',').map((p) => p.trim()).filter(Boolean);
+    return parts.map((part) => {
+      const upper = part.toUpperCase();
+      if (/^\d{5}(-\d{4})?$/.test(part)) return { label: part, type: 'zip' };
+      if (upper.length === 2 && US_STATES.has(upper)) return { label: upper, type: 'state' };
+      if (!part.includes(' ') && part.length <= 30) return { label: part, type: 'city' };
+      return { label: part, type: 'address' };
+    });
+  };
 
   // Add/Edit modal
   const FUELS: { key: string; label: string }[] = [
@@ -218,28 +264,81 @@ export const Stations: React.FC = () => {
       </div>
 
       {/* SEARCH + FILTER */}
-      <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', marginBottom: '16px' }}>
-        <div style={{ position: 'relative', flex: '1 1 240px' }}>
-          <Search size={16} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
-          <input
-            className="form-input"
-            style={{ paddingLeft: '36px' }}
-            placeholder="Search name, city or brand... (press Enter)"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            onKeyDown={(e) => { if (e.key === 'Enter') fetchStations(1, search, statusFilter); }}
-          />
+      <div style={{ marginBottom: '16px' }}>
+        <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
+          <div style={{ position: 'relative', flex: '1 1 240px' }}>
+            <Search size={16} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
+            <input
+              className="form-input"
+              style={{ paddingLeft: '36px', paddingRight: search ? '36px' : '12px' }}
+              placeholder="Search by name, address, city, state, zip — or paste a full address"
+              value={search}
+              onChange={(e) => handleSearchChange(e.target.value)}
+              onKeyDown={(e) => { if (e.key === 'Enter') { if (debounceRef.current) clearTimeout(debounceRef.current); fetchStations(1, search, statusFilter); } }}
+            />
+            {search && (
+              <button
+                onClick={clearSearch}
+                style={{
+                  position: 'absolute', right: '8px', top: '50%', transform: 'translateY(-50%)',
+                  background: 'rgba(255,255,255,0.1)', border: 'none', borderRadius: '50%',
+                  width: '24px', height: '24px', display: 'flex', alignItems: 'center',
+                  justifyContent: 'center', cursor: 'pointer', color: 'var(--text-secondary)',
+                  transition: 'all 0.15s ease',
+                }}
+                onMouseEnter={(e) => { (e.target as HTMLElement).style.background = 'rgba(255,255,255,0.2)'; }}
+                onMouseLeave={(e) => { (e.target as HTMLElement).style.background = 'rgba(255,255,255,0.1)'; }}
+                title="Clear search"
+              >
+                <X size={14} />
+              </button>
+            )}
+          </div>
+          {['all', 'active', 'inactive'].map((s) => (
+            <button
+              key={s}
+              className={`btn ${statusFilter === s ? 'btn-primary' : 'btn-outline'}`}
+              style={{ padding: '8px 16px', textTransform: 'capitalize' }}
+              onClick={() => { setStatusFilter(s); fetchStations(1, search, s); }}
+            >
+              {s}
+            </button>
+          ))}
         </div>
-        {['all', 'active', 'inactive'].map((s) => (
-          <button
-            key={s}
-            className={`btn ${statusFilter === s ? 'btn-primary' : 'btn-outline'}`}
-            style={{ padding: '8px 16px', textTransform: 'capitalize' }}
-            onClick={() => { setStatusFilter(s); fetchStations(1, search, s); }}
-          >
-            {s}
-          </button>
-        ))}
+
+        {/* Search hint tags — show when a comma-separated address is detected */}
+        {(() => {
+          const hints = getSearchHints(search);
+          if (hints.length === 0) return null;
+          const typeColors: Record<string, { bg: string; color: string; label: string }> = {
+            zip:     { bg: 'rgba(52,211,153,0.15)', color: '#34d399', label: 'ZIP' },
+            state:   { bg: 'rgba(96,165,250,0.15)',  color: '#60a5fa', label: 'State' },
+            city:    { bg: 'rgba(251,191,36,0.15)',  color: '#fbbf24', label: 'City' },
+            address: { bg: 'rgba(167,139,250,0.15)', color: '#a78bfa', label: 'Address' },
+          };
+          return (
+            <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginTop: '8px', alignItems: 'center' }}>
+              <span style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>Searching:</span>
+              {hints.map((h, i) => {
+                const tc = typeColors[h.type] || typeColors.address;
+                return (
+                  <span
+                    key={i}
+                    style={{
+                      display: 'inline-flex', alignItems: 'center', gap: '5px',
+                      padding: '3px 10px', borderRadius: '20px', fontSize: '0.78rem',
+                      background: tc.bg, color: tc.color, fontWeight: 500,
+                      border: `1px solid ${tc.color}33`,
+                    }}
+                  >
+                    <span style={{ fontSize: '0.68rem', opacity: 0.8, textTransform: 'uppercase', letterSpacing: '0.5px' }}>{tc.label}</span>
+                    {h.label}
+                  </span>
+                );
+              })}
+            </div>
+          );
+        })()}
       </div>
 
       {/* BULK ACTION BAR */}
