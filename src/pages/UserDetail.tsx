@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Receipt, Droplets, MessageSquare, Bell, Mail, Heart, Clock } from 'lucide-react';
+import { ArrowLeft, Receipt, Droplets, MessageSquare, Bell, Mail, Heart, Clock, MapPin } from 'lucide-react';
 import toast from 'react-hot-toast';
 import api from '../api/axios';
 
@@ -96,6 +96,26 @@ export const UserDetail: React.FC = () => {
         <div className="glass-panel" style={{ padding: '18px' }}>
           <div style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', marginBottom: '4px' }}>Joined</div>
           <div style={{ fontWeight: 600 }}>{new Date(user.createdAt).toLocaleDateString()}</div>
+        </div>
+        <div className="glass-panel" style={{ padding: '18px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--text-secondary)', fontSize: '0.85rem', marginBottom: '4px' }}><MapPin size={15} /> Location</div>
+          {user.lastKnownLocation ? (
+            <div>
+              <a
+                href={`https://www.google.com/maps?q=${user.lastKnownLocation.lat},${user.lastKnownLocation.lon}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{ fontWeight: 600, color: 'var(--accent-primary)', textDecoration: 'none' }}
+              >
+                {user.lastKnownLocation.lat.toFixed(4)}, {user.lastKnownLocation.lon.toFixed(4)}
+              </a>
+              <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginTop: '2px' }}>
+                {new Date(user.lastKnownLocation.updatedAt).toLocaleString()}
+              </div>
+            </div>
+          ) : (
+            <div style={{ fontWeight: 600, color: 'var(--text-secondary)' }}>Not shared</div>
+          )}
         </div>
       </div>
 
