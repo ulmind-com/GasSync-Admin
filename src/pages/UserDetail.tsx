@@ -101,15 +101,18 @@ export const UserDetail: React.FC = () => {
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--text-secondary)', fontSize: '0.85rem', marginBottom: '4px' }}><MapPin size={15} /> Location</div>
           {user.lastKnownLocation ? (
             <div>
+              {user.lastKnownLocation.name && (
+                <div style={{ fontWeight: 600, marginBottom: '2px' }}>{user.lastKnownLocation.name}</div>
+              )}
               <a
                 href={`https://www.google.com/maps?q=${user.lastKnownLocation.lat},${user.lastKnownLocation.lon}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                style={{ fontWeight: 600, color: 'var(--accent-primary)', textDecoration: 'none' }}
+                style={{ fontSize: '0.8rem', color: 'var(--accent-primary)', textDecoration: 'none' }}
               >
-                {user.lastKnownLocation.lat.toFixed(4)}, {user.lastKnownLocation.lon.toFixed(4)}
+                {user.lastKnownLocation.lat.toFixed(4)}, {user.lastKnownLocation.lon.toFixed(4)} ↗
               </a>
-              <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginTop: '2px' }}>
+              <div style={{ fontSize: '0.7rem', color: 'var(--text-secondary)', marginTop: '2px' }}>
                 {new Date(user.lastKnownLocation.updatedAt).toLocaleString()}
               </div>
             </div>
